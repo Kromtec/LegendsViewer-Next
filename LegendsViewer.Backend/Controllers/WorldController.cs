@@ -1,5 +1,6 @@
 ﻿using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Extensions;
+using LegendsViewer.Backend.Legends;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Maps;
 using Microsoft.AspNetCore.Mvc;
@@ -103,8 +104,6 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
 
     [HttpGet("eventchart")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<ChartDataDto> GetEventChart()
     {
         var response = new ChartDataDto();
@@ -134,6 +133,32 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         foreach (var eventItem in eventCounts.OrderBy(kv => kv.Key))
         {
             response.Labels.Add(eventItem.Key.ToString());
+            dataset.Data.Add(eventItem.Value);
+        }
+
+        response.Datasets.Add(dataset);
+        return Ok(response);
+    }
+
+    [HttpGet("eventtypechart")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<ChartDataDto> GetEventTypeChart()
+    {
+        var response = new ChartDataDto();
+        var dataset = new ChartDatasetDto
+        {
+            Label = "Occurrences per Event Type"
+        };
+
+        // Group by type and count events per type
+        var eventCounts = _worldDataService.Events
+            .GroupBy(e => e.Type)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // Output the results (sorted by count)
+        foreach (var eventItem in eventCounts.OrderByDescending(kv => kv.Value))
+        {
+            response.Labels.Add($"{WorldEventExtensions.GetEventInfo(eventItem.Key)} ({eventItem.Key}) {eventItem.Value,10}");
             dataset.Data.Add(eventItem.Value);
         }
 

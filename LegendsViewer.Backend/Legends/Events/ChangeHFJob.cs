@@ -2,6 +2,7 @@ using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.WorldObjects;
 using LegendsViewer.Backend.Utilities;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events;
 
@@ -35,31 +36,37 @@ public class ChangeHfJob : WorldEvent
         Region?.AddEvent(this);
         UndergroundRegion?.AddEvent(this);
     }
+
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime() + HistoricalFigure?.ToLink(link, pov, this);
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string figure = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN HISTORICAL FIGURE";
+        eventString.Append(figure).Append(' ');
+
         if (OldJob != "standard" && NewJob != "standard")
         {
-            eventString += " gave up being " + Formatting.AddArticle(OldJob) + " to become " + Formatting.AddArticle(NewJob);
+            eventString.Append($"gave up being {Formatting.AddArticle(OldJob)} to become {Formatting.AddArticle(NewJob)}");
         }
         else if (NewJob != "standard")
         {
-            eventString += " became " + Formatting.AddArticle(NewJob);
+            eventString.Append($"became {Formatting.AddArticle(NewJob)}");
         }
         else if (OldJob != "standard")
         {
-            eventString += " stopped being " + Formatting.AddArticle(OldJob);
+            eventString.Append($"stopped being {Formatting.AddArticle(OldJob)}");
         }
         else
         {
-            eventString += " became a peasant";
+            eventString.Append("became a peasant");
         }
+
         if (Site != null)
         {
-            eventString += " in " + Site.ToLink(link, pov, this);
+            eventString.Append($" in {Site.ToLink(link, pov, this)}");
         }
-        eventString += PrintParentCollection(link, pov);
-        eventString += ".";
-        return eventString;
+
+        eventString.Append(PrintParentCollection(link, pov)).Append('.');
+        return eventString.ToString();
     }
 }

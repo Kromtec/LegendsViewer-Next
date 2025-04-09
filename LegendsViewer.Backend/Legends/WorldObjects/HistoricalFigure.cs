@@ -16,6 +16,8 @@ namespace LegendsViewer.Backend.Legends.WorldObjects;
 
 public class HistoricalFigure : WorldObject
 {
+    private const int MaxListItemCount = 100;
+
     private static readonly List<string> KnownEntitySubProperties = ["entity_id", "link_strength", "link_type", "position_profile_id", "start_year", "end_year"];
     private static readonly List<string> KnownSiteLinkSubProperties = ["link_type", "site_id", "sub_id", "entity_id", "occupation_id"];
     private static readonly List<string> KnownEntitySquadLinkProperties = ["squad_id", "squad_position", "entity_id", "start_year", "end_year"];
@@ -140,19 +142,72 @@ public class HistoricalFigure : WorldObject
                 {
                     continue;
                 }
-
-                string raceString = link.HistoricalFigure.GetRaceString();
-                string typeString = Formatting.InitCaps(raceString ?? link.Type.GetDescription());
+                string associatedSpheres = string.Join(", ", link.HistoricalFigure.Spheres);
                 list.Add(new ListItemDto
                 {
-                    Title = $"{typeString} for {string.Join(", ", link.HistoricalFigure.Spheres)}",
-                    Subtitle = $"{link.HistoricalFigure?.ToLink(true, this)}",
+                    Title = link.HistoricalFigure.ToLink(true, this),
+                    Subtitle = associatedSpheres,
                     Append = HtmlStyleUtil.GetChipString(link.Strength.ToString())
                 });
             }
             return list;
         }
     }
+
+    [JsonIgnore]
+    public List<(HistoricalFigure Worshipper, int Strength)>? WorshippingFigures { get; set; }
+    public List<ListItemDto> WorshippingFiguresList
+    {
+        get
+        {
+            var list = new List<ListItemDto>();
+            if (WorshippingFigures != null)
+            {
+                foreach (var (worshipper, strength) in WorshippingFigures.OrderByDescending(w => w.Strength).Take(MaxListItemCount))
+                {
+                    list.Add(new ListItemDto
+                    {
+                        Title = worshipper?.ToLink(true, this),
+                        Subtitle = worshipper?.GetLastAssignmentString(),
+                        Append = HtmlStyleUtil.GetChipString(strength.ToString())
+                    });
+                }
+                if (WorshippingFigures.Count > MaxListItemCount)
+                {
+                    list.Add(new ListItemDto
+                    {
+                        Subtitle = $"... and {WorshippingFigures.Count - MaxListItemCount} more!",
+                    });
+                }
+            }
+
+            return list;
+        }
+    }
+
+    [JsonIgnore]
+    public List<Entity>? WorshippingEntities { get; set; }
+    public List<ListItemDto> WorshippingEntitiesList
+    {
+        get
+        {
+            var list = new List<ListItemDto>();
+            if (WorshippingEntities != null)
+            {
+                foreach (var worshipper in WorshippingEntities)
+                {
+                    list.Add(new ListItemDto
+                    {
+                        Title = worshipper?.ToLink(true, this),
+                        Subtitle = worshipper?.EntityType.GetDescription()
+                    });
+                }
+            }
+
+            return list;
+        }
+    }
+
     public List<SiteProperty> SiteProperties { get; set; } = [];
     public List<EntityReputation> Reputations { get; set; } = [];
     public List<RelationshipProfileHf> RelationshipProfiles { get; set; } = [];
@@ -343,12 +398,12 @@ public class HistoricalFigure : WorldObject
                     Subtitle = string.Join(", ", RelatedRegions.ConvertAll(region => region.ToLink()))
                 });
             }
-            if (WorshippedBy != null)
+            if (WorshippingFigures != null)
             {
                 list.Add(new ListItemDto
                 {
                     Title = "Worshipped By",
-                    Subtitle = WorshippedBy.ToLink(true, this)
+                    Subtitle = $"{WorshippingFigures.Count} historical figures"
                 });
             }
             if (LineageCurseParent != null)
@@ -918,7 +973,7 @@ public class HistoricalFigure : WorldObject
         {
             return lastAssignmentString;
         }
-        if(_jobs == null)
+        if (_jobs == null)
         {
             _jobs = [];
             foreach (var relevantEvent in Events.OfType<ChangeHfJob>())
@@ -959,29 +1014,6 @@ public class HistoricalFigure : WorldObject
             return $"{highestSkillDescription.Rank} {highestSkillDescription.Name}";
         }
         return string.Empty;
-    }
-
-    public string GetSpheresAsString()
-    {
-        if (Spheres == null)
-        {
-            return string.Empty;
-        }
-        string spheres = "";
-        foreach (string sphere in Spheres)
-        {
-            if (Spheres[^1] == sphere && Spheres.Count > 1)
-            {
-                spheres += " and ";
-            }
-            else if (spheres.Length > 0)
-            {
-                spheres += ", ";
-            }
-
-            spheres += sphere;
-        }
-        return spheres;
     }
 
     public class State
@@ -1031,39 +1063,6 @@ public class HistoricalFigure : WorldObject
         }
 
         return owner ? "its" : "it";
-    }
-
-    public string GetRaceTitleString()
-    {
-        string hfraceString = "";
-
-        if (Ghost)
-        {
-            hfraceString += "ghostly ";
-        }
-
-        if (Skeleton)
-        {
-            hfraceString += "skeletal ";
-        }
-
-        if (Zombie)
-        {
-            hfraceString += "zombie ";
-        }
-
-        if (string.Equals(Caste, "MALE", StringComparison.OrdinalIgnoreCase))
-        {
-            hfraceString += "male ";
-        }
-        else if (string.Equals(Caste, "FEMALE", StringComparison.OrdinalIgnoreCase))
-        {
-            hfraceString += "female ";
-        }
-
-        hfraceString += GetRaceString();
-
-        return Formatting.AddArticle(hfraceString);
     }
 
     public string GetRaceString()

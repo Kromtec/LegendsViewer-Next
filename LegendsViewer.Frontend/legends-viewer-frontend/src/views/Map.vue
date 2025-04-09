@@ -17,6 +17,7 @@ export type SiteType = components['schemas']['SiteType'];
 interface MarkerConfig {
   shape: 'circle' | 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'star';
   size?: number;
+  color?: string;
 }
 
 const siteTypeMarkers: Record<SiteType, MarkerConfig> = {
@@ -44,6 +45,11 @@ const siteTypeMarkers: Record<SiteType, MarkerConfig> = {
   Fort: { shape: 'triangle' },
   Tomb: { shape: 'triangle' },
 
+  // Mysterious
+  MysteriousLair: { shape: 'square', size: 2, color: '#AAAAFF' },
+  MysteriousDungeon: { shape: 'pentagon', color: '#AAAAFF' },
+  MysteriousPalace: { shape: 'hexagon', size: 4, color: '#AAAAFF' },
+
   // Nature (Kobolds often start there)
   Cave: { shape: 'circle' },
 
@@ -69,7 +75,7 @@ const siteTypeMarkers: Record<SiteType, MarkerConfig> = {
 
 function createMarker(siteType: SiteType, siteColor: string | null | undefined, latlng: L.LatLngExpression): L.Layer {
   const config = siteTypeMarkers[siteType];
-  const color = siteColor || "#666"
+  const color = config?.color ?? siteColor ?? "#666"
   const size = config?.size ?? 3;
   switch (config?.shape) {
     case 'circle':

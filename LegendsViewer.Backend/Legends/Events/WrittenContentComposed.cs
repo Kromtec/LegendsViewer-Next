@@ -1,6 +1,7 @@
 using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.WorldObjects;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events;
 
@@ -73,42 +74,43 @@ public class WrittenContentComposed : WorldEvent
             }
         }
     }
-
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime();
-        eventString += WrittenContent != null ? WrittenContent.ToLink(link, pov, this) : "UNKNOWN WRITTEN CONTENT";
-        eventString += " was authored by ";
-        eventString += HistoricalFigure?.ToLink(link, pov, this);
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string content = WrittenContent?.ToLink(link, pov, this) ?? "UNKNOWN WRITTEN CONTENT";
+        string author = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN AUTHOR";
+
+        eventString.Append($"{content} was authored by {author}");
+
         if (Site != null)
         {
-            eventString += " in ";
-            eventString += Site.ToLink(link, pov, this);
+            eventString.Append($" in {Site.ToLink(link, pov, this)}");
         }
+
         if (GlorifiedHf != null)
         {
-            eventString += " in order to glorify " + GlorifiedHf.ToLink(link, pov, this);
+            eventString.Append($" in order to glorify {GlorifiedHf.ToLink(link, pov, this)}");
         }
+
         if (!string.IsNullOrWhiteSpace(Circumstance))
         {
             if (CircumstanceHf != null)
             {
-                switch (Circumstance)
+                eventString.Append(Circumstance switch
                 {
-                    case "pray to hf":
-                        eventString += " after praying to " + CircumstanceHf.ToLink(link, pov, this);
-                        break;
-                    case "dream about hf":
-                        eventString += " after dreaming of " + CircumstanceHf.ToLink(link, pov, this);
-                        break;
-                }
+                    "pray to hf" => $" after praying to {CircumstanceHf.ToLink(link, pov, this)}",
+                    "dream about hf" => $" after dreaming of {CircumstanceHf.ToLink(link, pov, this)}",
+                    _ => ""
+                });
             }
             else
             {
-                eventString += " after a " + Circumstance;
+                eventString.Append($" after a {Circumstance}");
             }
         }
-        eventString += ".";
-        return eventString;
+
+        eventString.Append('.');
+        return eventString.ToString();
     }
 }

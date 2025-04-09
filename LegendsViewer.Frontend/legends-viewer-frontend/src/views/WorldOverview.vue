@@ -1,12 +1,24 @@
+<!--suppress ALL -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import {computed, onUnmounted, ref} from 'vue';
 import { useBookmarkStore } from '../stores/bookmarkStore';
-import { useFileSystemStore } from '../stores/fileSystemStore';
+import {dfDirectoryStorageKey, useFileSystemStore} from '../stores/fileSystemStore';
 
 const bookmarkStore = useBookmarkStore()
 const fileSystemStore = useFileSystemStore()
 bookmarkStore.getAll()
-fileSystemStore.getRoot();
+fileSystemStore.initialize();
+
+const unsubscribe = fileSystemStore.$subscribe((_, state) => {
+  const newStateCurrentDirectory = state.filesAndSubdirectories.currentDirectory
+  if (newStateCurrentDirectory) {
+    localStorage.setItem(dfDirectoryStorageKey, newStateCurrentDirectory);
+  }
+})
+
+onUnmounted(() => {
+  unsubscribe()
+})
 
 const fileName = ref<string>('')
 

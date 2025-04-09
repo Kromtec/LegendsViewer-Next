@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.EventCollections;
 using LegendsViewer.Backend.Legends.Events;
@@ -432,6 +433,10 @@ public class World : IDisposable, IWorld
                 HistoricalFigure hf = _hFtoHfLinkHFs[i];
                 HistoricalFigureLink relation = new(link.SubProperties, this);
                 hf.RelatedHistoricalFigures.Add(relation);
+                if (relation.Type == HistoricalFigureLinkType.Deity)
+                {
+                    relation.HistoricalFigure.AddWorshipper(hf, relation.Strength);
+                }
             }
         }
 

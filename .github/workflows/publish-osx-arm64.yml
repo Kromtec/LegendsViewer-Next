@@ -1,0 +1,45 @@
+name: Publish osx-arm64
+
+on:
+  workflow_dispatch:  # This allows manual triggering from the Actions tab.
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore LegendsViewer.sln
+
+      - name: Build Backend and Frontend (Vue 3)
+        run: dotnet build LegendsViewer.sln --configuration Release --no-restore
+
+      - name: Publish Backend
+        run: dotnet publish LegendsViewer.Backend/LegendsViewer.Backend.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:DebugType=none -o ./publish
+
+      - name: Publish Frontend
+        run: dotnet publish LegendsViewer.Frontend/LegendsViewer.Frontend.csproj -c Release -r osx-arm64 -p:DebugType=none -o ./publish
+
+      - name: Sign and Create ZIP Archive
+        env:
+          MACOS_DEVELOPER_ID: ${{ secrets.MACOS_DEVELOPER_ID }}
+          MACOS_APPSTORE_APP_PASSWORD: ${{ secrets.MACOS_APPSTORE_APP_PASSWORD }}
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+        run: .github/scripts/signmacos.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegendsViewer-osx-arm64
+          path: ./release/LegendsViewer*.dmg

@@ -1,155 +1,154 @@
 ﻿using LegendsViewer.Backend.Legends.WorldObjects;
 using Microsoft.AspNetCore.Mvc;
-using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.EventCollections;
-using LegendsViewer.Backend.Legends.Events;
+using LegendsViewer.Backend.DataAccess.Repositories.Interfaces;
 
 namespace LegendsViewer.Backend.Controllers;
 
-public class DanceFormController(IWorld worldDataService) : WorldObjectGenericController<DanceForm>(worldDataService.DanceForms, worldDataService.GetDanceForm)
+public class DanceFormController(IWorldObjectRepository<DanceForm> repository) : WorldObjectGenericController<DanceForm>(repository)
 {
 }
 
-public class MusicalFormController(IWorld worldDataService) : WorldObjectGenericController<MusicalForm>(worldDataService.MusicalForms, worldDataService.GetMusicalForm)
+public class MusicalFormController(IWorldObjectRepository<MusicalForm> repository) : WorldObjectGenericController<MusicalForm>(repository)
 {
 }
 
-public class PoeticFormController(IWorld worldDataService) : WorldObjectGenericController<PoeticForm>(worldDataService.PoeticForms, worldDataService.GetPoeticForm)
+public class PoeticFormController(IWorldObjectRepository<PoeticForm> repository) : WorldObjectGenericController<PoeticForm>(repository)
 {
 }
 
-public class WrittenContentController(IWorld worldDataService) : WorldObjectGenericController<WrittenContent>(worldDataService.WrittenContents, worldDataService.GetWrittenContent)
+public class WrittenContentController(IWorldObjectRepository<WrittenContent> repository) : WorldObjectGenericController<WrittenContent>(repository)
 {
 }
 
-public class LandmassController(IWorld worldDataService) : WorldObjectGenericController<Landmass>(worldDataService.Landmasses, worldDataService.GetLandmass)
+public class LandmassController(IWorldObjectRepository<Landmass> repository) : WorldObjectGenericController<Landmass>(repository)
 {
 }
 
-public class RiverController(IWorld worldDataService) : WorldObjectGenericController<River>(worldDataService.Rivers, worldDataService.GetRiver)
+public class RiverController(IWorldObjectRepository<River> repository) : WorldObjectGenericController<River>(repository)
 {
 }
 
-public class SiteController(IWorld worldDataService) : WorldObjectGenericController<Site>(worldDataService.Sites, worldDataService.GetSite)
+public class SiteController(IWorldObjectRepository<Site> repository) : WorldObjectGenericController<Site>(repository)
 {
 }
 
-public class RegionController(IWorld worldDataService) : WorldObjectGenericController<WorldRegion>(worldDataService.Regions, worldDataService.GetRegion)
+public class RegionController(IWorldObjectRepository<WorldRegion> repository) : WorldObjectGenericController<WorldRegion>(repository)
 {
 }
 
-public class UndergroundRegionController(IWorld worldDataService) : WorldObjectGenericController<UndergroundRegion>(worldDataService.UndergroundRegions, worldDataService.GetUndergroundRegion)
+public class UndergroundRegionController(IWorldObjectRepository<UndergroundRegion> repository) : WorldObjectGenericController<UndergroundRegion>(repository)
 {
 }
 
-public class ArtifactController(IWorld worldDataService) : WorldObjectGenericController<Artifact>(worldDataService.Artifacts, worldDataService.GetArtifact)
+public class ArtifactController(IWorldObjectRepository<Artifact> repository) : WorldObjectGenericController<Artifact>(repository)
 {
 }
 
-public class EntityController(IWorld worldDataService) : WorldObjectGenericController<Entity>(worldDataService.Entities, worldDataService.GetEntity)
+public class EntityController(IWorldObjectRepository<Entity> repository) : WorldObjectGenericController<Entity>(repository)
 {
     [HttpGet("civs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<Entity>> GetMainCivilizations()
     {
-        return Ok(AllElements.Where(x => x.IsCiv || (x.EntityType == Legends.Enums.EntityType.Civilization && x.SiteHistory.Count > 0)));
+        return Ok(Repository.GetAllElements().Where(x => x.IsCiv || (x.EntityType == Legends.Enums.EntityType.Civilization && x.SiteHistory.Count > 0)));
     }
 }
 
-public class HistoricalFigureController(IWorld worldDataService) : WorldObjectGenericController<HistoricalFigure>(worldDataService.HistoricalFigures, worldDataService.GetHistoricalFigure)
+public class HistoricalFigureController(IWorldObjectRepository<HistoricalFigure> repository) : WorldObjectGenericController<HistoricalFigure>(repository)
 {
 }
 
-public class MountainPeakController(IWorld worldDataService) : WorldObjectGenericController<MountainPeak>(worldDataService.MountainPeaks, worldDataService.GetMountainPeak)
+public class MountainPeakController(IWorldObjectRepository<MountainPeak> repository) : WorldObjectGenericController<MountainPeak>(repository)
 {
 }
 
-public class StructureController(IWorld worldDataService) : WorldObjectGenericController<Structure>(worldDataService.Structures, worldDataService.GetStructure)
+public class StructureController(IWorldObjectRepository<Structure> repository) : WorldObjectGenericController<Structure>(repository)
 {
 }
 
-public class ConstructionController(IWorld worldDataService) : WorldObjectGenericController<WorldConstruction>(worldDataService.WorldConstructions, worldDataService.GetWorldConstruction)
+public class ConstructionController(IWorldObjectRepository<WorldConstruction> repository) : WorldObjectGenericController<WorldConstruction>(repository)
 {
 }
 
-public class EraController(IWorld worldDataService) : WorldObjectGenericController<Era>(worldDataService.Eras, worldDataService.GetEra)
+public class EraController(IWorldObjectRepository<Era> repository) : WorldObjectGenericController<Era>(repository)
 {
 }
 
 // Warfare
 
-public class WarController(IWorld worldDataService) : WorldObjectGenericController<War>(worldDataService.Wars, worldDataService.GetEventCollection<War>)
+public class WarController(IWorldObjectRepository<War> repository) : WorldObjectGenericController<War>(repository)
 {
 }
 
-public class BattleController(IWorld worldDataService) : WorldObjectGenericController<Battle>(worldDataService.Battles, worldDataService.GetEventCollection<Battle>)
+public class BattleController(IWorldObjectRepository<Battle> repository) : WorldObjectGenericController<Battle>(repository)
 {
 }
 
-public class DuelController(IWorld worldDataService) : WorldObjectGenericController<Duel>(worldDataService.Duels, worldDataService.GetEventCollection<Duel>)
+public class DuelController(IWorldObjectRepository<Duel> repository) : WorldObjectGenericController<Duel>(repository)
 {
 }
 
-public class RaidController(IWorld worldDataService) : WorldObjectGenericController<Raid>(worldDataService.Raids, worldDataService.GetEventCollection<Raid>)
+public class RaidController(IWorldObjectRepository<Raid> repository) : WorldObjectGenericController<Raid>(repository)
 {
 }
 
-public class SiteConqueredController(IWorld worldDataService) : WorldObjectGenericController<SiteConquered>(worldDataService.SiteConquerings, worldDataService.GetEventCollection<SiteConquered>)
+public class SiteConqueredController(IWorldObjectRepository<SiteConquered> repository) : WorldObjectGenericController<SiteConquered>(repository)
 {
 }
 
 // Politcal Conflicts 
 
-public class InsurrectionController(IWorld worldDataService) : WorldObjectGenericController<Insurrection>(worldDataService.Insurrections, worldDataService.GetEventCollection<Insurrection>)
+public class InsurrectionController(IWorldObjectRepository<Insurrection> repository) : WorldObjectGenericController<Insurrection>(repository)
 {
 }
 
-public class PersecutionController(IWorld worldDataService) : WorldObjectGenericController<Persecution>(worldDataService.Persecutions, worldDataService.GetEventCollection<Persecution>)
+public class PersecutionController(IWorldObjectRepository<Persecution> repository) : WorldObjectGenericController<Persecution>(repository)
 {
 }
 
-public class PurgeController(IWorld worldDataService) : WorldObjectGenericController<Purge>(worldDataService.Purges, worldDataService.GetEventCollection<Purge>)
+public class PurgeController(IWorldObjectRepository<Purge> repository) : WorldObjectGenericController<Purge>(repository)
 {
 }
 
-public class CoupController(IWorld worldDataService) : WorldObjectGenericController<EntityOverthrownCollection>(worldDataService.Coups, worldDataService.GetEventCollection<EntityOverthrownCollection>)
+public class CoupController(IWorldObjectRepository<EntityOverthrownCollection> repository) : WorldObjectGenericController<EntityOverthrownCollection>(repository)
 {
 }
 
-public class BeastAttackController(IWorld worldDataService) : WorldObjectGenericController<BeastAttack>(worldDataService.BeastAttacks, worldDataService.GetEventCollection<BeastAttack>)
+public class BeastAttackController(IWorldObjectRepository<BeastAttack> repository) : WorldObjectGenericController<BeastAttack>(repository)
 {
 }
 
-public class AbductionController(IWorld worldDataService) : WorldObjectGenericController<Abduction>(worldDataService.Abductions, worldDataService.GetEventCollection<Abduction>)
+public class AbductionController(IWorldObjectRepository<Abduction> repository) : WorldObjectGenericController<Abduction>(repository)
 {
 }
 
-public class TheftController(IWorld worldDataService) : WorldObjectGenericController<Theft>(worldDataService.Thefts, worldDataService.GetEventCollection<Theft>)
+public class TheftController(IWorldObjectRepository<Theft> repository) : WorldObjectGenericController<Theft>(repository)
 {
 }
 
 // Rituals 
 
-public class ProcessionController(IWorld worldDataService) : WorldObjectGenericController<ProcessionCollection>(worldDataService.Processions, worldDataService.GetEventCollection<ProcessionCollection>)
+public class ProcessionController(IWorldObjectRepository<ProcessionCollection> repository) : WorldObjectGenericController<ProcessionCollection>(repository)
 {
 }
 
-public class PerformanceController(IWorld worldDataService) : WorldObjectGenericController<PerformanceCollection>(worldDataService.Performances, worldDataService.GetEventCollection<PerformanceCollection>)
+public class PerformanceController(IWorldObjectRepository<PerformanceCollection> repository) : WorldObjectGenericController<PerformanceCollection>(repository)
 {
 }
 
-public class JourneyController(IWorld worldDataService) : WorldObjectGenericController<Journey>(worldDataService.Journeys, worldDataService.GetEventCollection<Journey>)
+public class JourneyController(IWorldObjectRepository<Journey> repository) : WorldObjectGenericController<Journey>(repository)
 {
 }
 
-public class CompetitionController(IWorld worldDataService) : WorldObjectGenericController<CompetitionCollection>(worldDataService.Competitions, worldDataService.GetEventCollection<CompetitionCollection>)
+public class CompetitionController(IWorldObjectRepository<CompetitionCollection> repository) : WorldObjectGenericController<CompetitionCollection>(repository)
 {
 }
 
-public class CeremonyController(IWorld worldDataService) : WorldObjectGenericController<CeremonyCollection>(worldDataService.Ceremonies, worldDataService.GetEventCollection<CeremonyCollection>)
+public class CeremonyController(IWorldObjectRepository<CeremonyCollection> repository) : WorldObjectGenericController<CeremonyCollection>(repository)
 {
 }
 
-public class OccasionController(IWorld worldDataService) : WorldObjectGenericController<Occasion>(worldDataService.Occasions, worldDataService.GetEventCollection<Occasion>)
+public class OccasionController(IWorldObjectRepository<Occasion> repository) : WorldObjectGenericController<Occasion>(repository)
 {
 }

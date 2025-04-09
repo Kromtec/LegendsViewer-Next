@@ -31,4 +31,5 @@ export interface TableHeader {
     title: string;
     key: string;
     align?: 'start' | 'end' | 'center';
+    sortable?: boolean;
 }
