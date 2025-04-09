@@ -4,6 +4,8 @@ import { components } from '../generated/api-schema'; // Import from the OpenAPI
 
 export type FilesAndSubdirectories = components['schemas']['FilesAndSubdirectoriesDto'];
 
+export const dfDirectoryStorageKey = 'df-directory'
+
 export const useFileSystemStore = defineStore('fileSystem', {
   state: () => ({
     filesAndSubdirectories: {} as FilesAndSubdirectories,
@@ -68,13 +70,22 @@ export const useFileSystemStore = defineStore('fileSystem', {
       }
     },
 
-    async getRoot() {
+    async initialize() {
       // Set loading state to true
       this.loading = true;
 
       try {
+        // Fetch from the stored path if there is one, else filesystem root
+        const storedPath = localStorage.getItem(dfDirectoryStorageKey)
         // Fetch directory info from the backend
-        const { data, error } = await client.GET('/api/FileSystem');
+        // @ts-ignore
+        const { data, error } = await client.GET(`/api/FileSystem/{path}`, {
+          params: {
+            path : {
+              path: storedPath ? encodeURIComponent(storedPath) : ""
+            }
+          }
+        });
 
         if (error) {
           console.error(error);
