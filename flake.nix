@@ -50,7 +50,7 @@
             src = pkgs.fetchzip {
               url =
                 "https://github.com/Kromtec/LegendsViewer-Next/releases/download/v${version}/LegendsViewer-${version}-linux-x64.zip";
-              hash = "sha256:1dxxbf2rag6ma3amjrw51f4vajl8hgxrplg5lzgw27mg2wif5svz";
+              hash = "sha256:0gry94v683jjwl4wa2nk0p5dj5sk30hha2p6pi5ckw9mhwmh20gm";
               stripRoot = false;
             };
 
