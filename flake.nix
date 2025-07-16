@@ -28,6 +28,17 @@
             fontconfig
             autoPatchelfHook
           ];
+
+          # # Setup Release Info
+          # repoOwner = "Kromtec";
+          # repoName = "LegendsViewer-Next";
+          # # Grab latest release from Github API
+          # latestReleaseJson = builtins.fetchurl {
+          #   url = "https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest";
+          #   sha256 = lib.fakeHash;
+          # };
+          # releaseData = builtins.fromJSON latestReleaseJson;
+          # releaseVersion = lib.strings.removePrefix "v" releaseData.tag_name; # Strip v out of version
         in {
 
           formatter = pkgs.nixfmt-rfc-style;
@@ -39,7 +50,7 @@
             src = pkgs.fetchzip {
               url =
                 "https://github.com/Kromtec/LegendsViewer-Next/releases/download/v${version}/LegendsViewer-${version}-linux-x64.zip";
-              hash = "sha256-f+viIhevHsHfp+XRm/uDiEq1iQuFZ1nVUNU8lYVbvbc=";
+              hash = "sha256:1dxxbf2rag6ma3amjrw51f4vajl8hgxrplg5lzgw27mg2wif5svz";
               stripRoot = false;
             };
 
