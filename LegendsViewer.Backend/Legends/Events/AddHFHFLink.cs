@@ -4,6 +4,7 @@ using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.WorldLinks;
 using LegendsViewer.Backend.Legends.WorldObjects;
 using LegendsViewer.Backend.Utilities;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events;
 
@@ -72,118 +73,36 @@ public class AddHfhfLink : WorldEvent
 
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime();
+        StringBuilder eventString = new StringBuilder(GetYearTime());
 
-        if (pov == HistoricalFigureTarget)
+        string subject = (pov == HistoricalFigureTarget)
+            ? HistoricalFigureTarget?.ToLink(link, pov, this) ?? "an unknown creature"
+            : HistoricalFigure?.ToLink(link, pov, this) ?? "an unknown creature";
+
+        string target = (pov == HistoricalFigureTarget)
+            ? HistoricalFigure?.ToLink(link, pov, this) ?? "an unknown creature"
+            : HistoricalFigureTarget?.ToLink(link, pov, this) ?? "an unknown creature";
+
+        eventString.Append(subject).Append(' ');
+
+        eventString.Append(LinkType switch
         {
-            eventString += HistoricalFigureTarget?.ToLink(link, pov, this) ?? "an unknown creature";
-        }
-        else
-        {
-            eventString += HistoricalFigure?.ToLink(link, pov, this) ?? "an unknown creature";
-        }
+            HistoricalFigureLinkType.Apprentice => (pov == HistoricalFigureTarget) ? "began an apprenticeship under " : "became the master of ",
+            HistoricalFigureLinkType.Master => (pov == HistoricalFigureTarget) ? "became the master of " : "began an apprenticeship under ",
+            HistoricalFigureLinkType.FormerApprentice => (pov == HistoricalFigure) ? "ceased being the apprentice of " : "ceased being the master of ",
+            HistoricalFigureLinkType.FormerMaster => (pov == HistoricalFigure) ? "ceased being the master of " : "ceased being the apprentice of ",
+            HistoricalFigureLinkType.Deity => (pov == HistoricalFigureTarget) ? "received the worship of " : "began worshipping ",
+            HistoricalFigureLinkType.Lover => "became romantically involved with ",
+            HistoricalFigureLinkType.Spouse => "married ",
+            HistoricalFigureLinkType.FormerSpouse => "divorced ",
+            HistoricalFigureLinkType.Prisoner => (pov == HistoricalFigureTarget) ? "was imprisoned by " : "imprisoned ",
+            HistoricalFigureLinkType.PetOwner => (pov == HistoricalFigureTarget) ? "became the owner of " : "became the pet of ",
+            _ => $"linked ({LinkType}) to "
+        });
 
-        switch (LinkType)
-        {
-            case HistoricalFigureLinkType.Apprentice:
-                if (pov == HistoricalFigureTarget)
-                {
-                    eventString += " began an apprenticeship under ";
-                }
-                else
-                {
-                    eventString += " became the master of ";
-                }
+        eventString.Append(target);
+        eventString.Append(PrintParentCollection(link, pov)).Append('.');
 
-                break;
-            case HistoricalFigureLinkType.Master:
-                if (pov == HistoricalFigureTarget)
-                {
-                    eventString += " became the master of ";
-                }
-                else
-                {
-                    eventString += " began an apprenticeship under ";
-                }
-
-                break;
-            case HistoricalFigureLinkType.FormerApprentice:
-                if (pov == HistoricalFigure)
-                {
-                    eventString += " ceased being the apprentice of ";
-                }
-                else
-                {
-                    eventString += " ceased being the master of ";
-                }
-
-                break;
-            case HistoricalFigureLinkType.FormerMaster:
-                if (pov == HistoricalFigure)
-                {
-                    eventString += " ceased being the master of ";
-                }
-                else
-                {
-                    eventString += " ceased being the apprentice of ";
-                }
-
-                break;
-            case HistoricalFigureLinkType.Deity:
-                if (pov == HistoricalFigureTarget)
-                {
-                    eventString += " received the worship of ";
-                }
-                else
-                {
-                    eventString += " began worshipping ";
-                }
-
-                break;
-            case HistoricalFigureLinkType.Lover:
-                eventString += " became romantically involved with ";
-                break;
-            case HistoricalFigureLinkType.FormerSpouse:
-            case HistoricalFigureLinkType.Spouse:
-                eventString += " married ";
-                break;
-            case HistoricalFigureLinkType.Prisoner:
-                if (pov == HistoricalFigureTarget)
-                {
-                    eventString += " was imprisoned by ";
-                }
-                else
-                {
-                    eventString += " imprisoned ";
-                }
-
-                break;
-            case HistoricalFigureLinkType.PetOwner:
-                if (pov == HistoricalFigureTarget)
-                {
-                    eventString += " became the owner of ";
-                }
-                else
-                {
-                    eventString += " became the pet of ";
-                }
-                break;
-            default:
-                eventString += " linked (" + LinkType + ") to ";
-                break;
-        }
-
-        if (pov == HistoricalFigureTarget)
-        {
-            eventString += HistoricalFigure?.ToLink(link, pov, this) ?? "an unknown creature";
-        }
-        else
-        {
-            eventString += HistoricalFigureTarget?.ToLink(link, pov, this) ?? "an unknown creature";
-        }
-
-        eventString += PrintParentCollection(link, pov);
-        eventString += ".";
-        return eventString;
+        return eventString.ToString();
     }
 }

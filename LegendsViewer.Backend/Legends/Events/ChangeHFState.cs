@@ -4,6 +4,7 @@ using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.Various;
 using LegendsViewer.Backend.Legends.WorldObjects;
 using LegendsViewer.Backend.Utilities;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events;
 
@@ -126,13 +127,12 @@ public class ChangeHfState : WorldEvent
         if (HistoricalFigure != null)
         {
             HistoricalFigure.AddEvent(this);
-            HistoricalFigure.States.Add(new HistoricalFigure.State(State, Year));
             HistoricalFigure.State? lastState = HistoricalFigure.States.LastOrDefault();
             if (lastState != null)
             {
                 lastState.EndYear = Year;
             }
-
+            HistoricalFigure.States.Add(new HistoricalFigure.State(State, Year));
             HistoricalFigure.CurrentState = State;
         }
         Site?.AddEvent(this);
@@ -142,133 +142,87 @@ public class ChangeHfState : WorldEvent
 
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime() + HistoricalFigure?.ToLink(link, pov, this);
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string figure = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN HISTORICAL FIGURE";
+        eventString.Append(figure).Append(' ');
+
+        // Determine the main action based on State and Mood
         if (State == HfState.Visiting)
         {
-            eventString += " visited ";
+            eventString.Append("visited ");
         }
         else if (State == HfState.Settled)
         {
-            switch (SubState)
+            eventString.Append(SubState switch
             {
-                case 45:
-                    eventString += " fled to ";
-                    break;
-                case 46:
-                case 47:
-                    eventString += " moved to study in ";
-                    break;
-                default:
-                    eventString += " settled in ";
-                    break;
-            }
+                45 => "fled to ",
+                46 or 47 => "moved to study in ",
+                _ => "settled in "
+            });
         }
         else if (State == HfState.Wandering)
         {
-            eventString += " began wandering ";
+            eventString.Append("began wandering ");
         }
-        else if (State == HfState.Refugee || State == HfState.Snatcher || State == HfState.Thief)
+        else if (State is HfState.Refugee or HfState.Snatcher or HfState.Thief)
         {
-            eventString += " became a " + State.ToString().ToLower() + " in ";
+            eventString.Append($"became a {State.ToString().ToLower()} in ");
         }
         else if (State == HfState.Scouting)
         {
-            eventString += " began scouting the area around ";
+            eventString.Append("began scouting the area around ");
         }
         else if (State == HfState.Hunting)
         {
-            eventString += " began hunting great beasts in ";
+            eventString.Append("began hunting great beasts in ");
         }
         else if (Mood != Mood.Unknown)
         {
-            switch (Mood)
+            eventString.Append(Mood switch
             {
-                case Mood.Macabre:
-                    eventString += " began to skulk and brood in ";
-                    break;
-                case Mood.Secretive:
-                    eventString += " withdrew from society in ";
-                    break;
-                case Mood.Insane:
-                    eventString += " became crazed in ";
-                    break;
-                case Mood.Possessed:
-                    eventString += " was possessed in ";
-                    break;
-                case Mood.Berserk:
-                    eventString += " went berserk in ";
-                    break;
-                case Mood.Fey:
-                    eventString += " was taken by a fey mood in ";
-                    break;
-                case Mood.Melancholy:
-                    eventString += " was striken by melancholy in ";
-                    break;
-                case Mood.Fell:
-                    eventString += " was taken by a fell mood in ";
-                    break;
-                case Mood.Catatonic:
-                    eventString += " stopped responding to the outside world in ";
-                    break;
-            }
+                Mood.Macabre => "began to skulk and brood in ",
+                Mood.Secretive => "withdrew from society in ",
+                Mood.Insane => "became crazed in ",
+                Mood.Possessed => "was possessed in ",
+                Mood.Berserk => "went berserk in ",
+                Mood.Fey => "was taken by a fey mood in ",
+                Mood.Melancholy => "was stricken by melancholy in ",
+                Mood.Fell => "was taken by a fell mood in ",
+                Mood.Catatonic => "stopped responding to the outside world in ",
+                _ => "changed state in "
+            });
         }
         else
         {
-            eventString += " changed state in ";
+            eventString.Append("changed state in ");
         }
 
-        if (Site != null)
-        {
-            eventString += Site?.ToLink(link, pov, this);
-        }
-        else if (Region != null)
-        {
-            eventString += Region?.ToLink(link, pov, this);
-        }
-        else if (UndergroundRegion != null)
-        {
-            eventString += UndergroundRegion?.ToLink(link, pov, this);
-        }
-        else
-        {
-            eventString += "the wilds";
-        }
+        // Determine location
+        eventString.Append(Site?.ToLink(link, pov, this) ??
+                            Region?.ToLink(link, pov, this) ??
+                            UndergroundRegion?.ToLink(link, pov, this) ??
+                            "the wilds");
 
+        // Determine reason
         if (Reason != ChangeHfStateReason.Unknown)
         {
-            switch (Reason)
+            eventString.Append(Reason switch
             {
-                case ChangeHfStateReason.FailedMood:
-                    eventString += " after failing to create an artifact";
-                    break;
-                case ChangeHfStateReason.GatherInformation:
-                    eventString += " to gather information";
-                    break;
-                case ChangeHfStateReason.BeWithMaster:
-                    eventString += " in order to be with the master";
-                    break;
-                case ChangeHfStateReason.Flight:
-                    eventString += " in order to flee";
-                    break;
-                case ChangeHfStateReason.Scholarship:
-                    eventString += " in order to pursue scholarship";
-                    break;
-                case ChangeHfStateReason.Pilgrimage:
-                    eventString += " on a pilgrimage";
-                    break;
-                case ChangeHfStateReason.LackOfSleep:
-                    eventString += " due to lack of sleep";
-                    break;
-                case ChangeHfStateReason.GreatDealOfStress:
-                    eventString += " after a great deal of stress";
-                    break;
-                case ChangeHfStateReason.ExiledAfterConviction:
-                    eventString += " after being exiled following a criminal conviction";
-                    break;
-            }
+                ChangeHfStateReason.FailedMood => " after failing to create an artifact",
+                ChangeHfStateReason.GatherInformation => " to gather information",
+                ChangeHfStateReason.BeWithMaster => " in order to be with the master",
+                ChangeHfStateReason.Flight => " in order to flee",
+                ChangeHfStateReason.Scholarship => " in order to pursue scholarship",
+                ChangeHfStateReason.Pilgrimage => " on a pilgrimage",
+                ChangeHfStateReason.LackOfSleep => " due to lack of sleep",
+                ChangeHfStateReason.GreatDealOfStress => " after a great deal of stress",
+                ChangeHfStateReason.ExiledAfterConviction => " after being exiled following a criminal conviction",
+                _ => ""
+            });
         }
-        eventString += PrintParentCollection(link, pov);
-        eventString += ".";
-        return eventString;
+
+        eventString.Append(PrintParentCollection(link, pov)).Append('.');
+        return eventString.ToString();
     }
 }

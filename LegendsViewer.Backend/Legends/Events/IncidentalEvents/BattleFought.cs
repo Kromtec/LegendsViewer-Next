@@ -1,8 +1,8 @@
 ﻿using LegendsViewer.Backend.Legends.EventCollections;
-using LegendsViewer.Backend.Legends.Events;
 using LegendsViewer.Backend.Legends.WorldObjects;
+using System.Text;
 
-namespace LegendsViewer.Backend.Legends.IncidentalEvents;
+namespace LegendsViewer.Backend.Legends.Events.IncidentalEvents;
 
 public class BattleFought : WorldEvent
 {
@@ -32,38 +32,43 @@ public class BattleFought : WorldEvent
 
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime();
-        eventString += HistoricalFigure?.ToLink(link, pov, this);
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string figure = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN HISTORICAL FIGURE";
+        string battle = Battle?.ToLink(link, pov, this) ?? "UNKNOWN BATTLE";
+
+        eventString.Append($"{figure} ");
+
         if (WasHired)
         {
-            eventString += " was hired";
+            eventString.Append("was hired");
             if (AsScout)
             {
-                eventString += " as a scout";
+                eventString.Append(" as a scout");
             }
-            eventString += " to fight in ";
+            eventString.Append(" to fight in ");
         }
         else
         {
-            eventString += " fought in ";
+            eventString.Append("fought in ");
         }
-        eventString += Battle?.ToLink(link, pov, this);
+
+        eventString.Append(battle);
+
         if (Site != null)
         {
-            eventString += " an assault on ";
-            eventString += Site.ToLink(link, pov, this);
+            eventString.Append($" an assault on {Site.ToLink(link, pov, this)}");
         }
         else if (Region != null)
         {
-            eventString += " in ";
-            eventString += Region.ToLink(link, pov, this);
+            eventString.Append($" in {Region.ToLink(link, pov, this)}");
         }
         else if (UndergroundRegion != null)
         {
-            eventString += " in ";
-            eventString += UndergroundRegion.ToLink(link, pov, this);
+            eventString.Append($" in {UndergroundRegion.ToLink(link, pov, this)}");
         }
-        eventString += ".";
-        return eventString;
+
+        eventString.Append('.');
+        return eventString.ToString();
     }
 }

@@ -317,8 +317,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -326,6 +326,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Abduction/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -662,8 +701,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -671,6 +710,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Artifact/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -1007,8 +1085,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1016,6 +1094,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Battle/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -1352,8 +1469,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1361,6 +1478,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/BeastAttack/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -1949,8 +2105,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1958,6 +2114,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Ceremony/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -2294,8 +2489,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2303,6 +2498,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Competition/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -2639,8 +2873,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2648,6 +2882,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Construction/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -2984,8 +3257,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2993,6 +3266,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Coup/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -3329,8 +3641,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3338,6 +3650,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/DanceForm/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -3674,8 +4025,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3683,6 +4034,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Duel/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -4056,8 +4446,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4065,6 +4455,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Entity/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -4401,8 +4830,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4410,6 +4839,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Era/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -4873,8 +5341,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4882,6 +5350,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/HistoricalFigure/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -5218,8 +5725,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5227,6 +5734,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Insurrection/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -5563,8 +6109,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5572,6 +6118,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Journey/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -5908,8 +6493,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5917,6 +6502,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Landmass/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -6253,8 +6877,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6262,6 +6886,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/MountainPeak/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -6598,8 +7261,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6607,6 +7270,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/MusicalForm/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -6943,8 +7645,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6952,6 +7654,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Occasion/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -7288,8 +8029,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7297,6 +8038,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Performance/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -7633,8 +8413,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7642,6 +8422,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Persecution/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -7978,8 +8797,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7987,6 +8806,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/PoeticForm/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -8323,8 +9181,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -8332,6 +9190,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Procession/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -8668,8 +9565,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -8677,6 +9574,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Purge/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -9013,8 +9949,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -9022,6 +9958,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Raid/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -9358,8 +10333,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -9367,6 +10342,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Region/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -9703,8 +10717,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -9712,6 +10726,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/River/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -10048,8 +11101,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -10057,6 +11110,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Site/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -10393,8 +11485,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -10402,6 +11494,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/SiteConquered/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -10738,8 +11869,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -10747,6 +11878,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Structure/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -11083,8 +12253,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -11092,6 +12262,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Theft/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -11428,8 +12637,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -11437,6 +12646,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/UndergroundRegion/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -11810,8 +13058,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -11819,6 +13067,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/War/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -12034,26 +13321,41 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/World/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
             };
@@ -12858,8 +14160,8 @@ export interface paths {
                         "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -12867,6 +14169,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/WrittenContent/{id}/eventtypechart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ChartDataDto"];
+                        "application/json": components["schemas"]["ChartDataDto"];
+                        "text/json": components["schemas"]["ChartDataDto"];
                     };
                 };
                 /** @description Not Found */
@@ -13448,6 +14789,8 @@ export interface components {
             creatureTypes?: components["schemas"]["CreatureType"][] | null;
             readonly relatedHistoricalFigureList?: components["schemas"]["ListItemDto"][] | null;
             readonly worshippedDeities?: components["schemas"]["ListItemDto"][] | null;
+            readonly worshippingFiguresList?: components["schemas"]["ListItemDto"][] | null;
+            readonly worshippingEntitiesList?: components["schemas"]["ListItemDto"][] | null;
             siteProperties?: components["schemas"]["SiteProperty"][] | null;
             reputations?: components["schemas"]["EntityReputation"][] | null;
             relationshipProfiles?: components["schemas"]["RelationshipProfileHf"][] | null;
@@ -14032,7 +15375,7 @@ export interface components {
         /** @enum {string} */
         SitePropertyType: "Unknown" | "House";
         /** @enum {string} */
-        SiteType: "Unknown" | "Cave" | "Fortress" | "ForestRetreat" | "DarkFortress" | "Town" | "Hamlet" | "Vault" | "DarkPits" | "Hillocks" | "Tomb" | "Tower" | "MountainHalls" | "Camp" | "Lair" | "Labyrinth" | "Shrine" | "ImportantLocation" | "Fort" | "Monastery" | "Castle";
+        SiteType: "Unknown" | "Cave" | "Fortress" | "ForestRetreat" | "DarkFortress" | "Town" | "Hamlet" | "Vault" | "DarkPits" | "Hillocks" | "Tomb" | "Tower" | "MountainHalls" | "Camp" | "Lair" | "Labyrinth" | "Shrine" | "ImportantLocation" | "Fort" | "Monastery" | "Castle" | "MysteriousPalace" | "MysteriousDungeon" | "MysteriousLair";
         Size: {
             readonly isEmpty?: boolean;
             /** Format: int32 */

@@ -6,13 +6,16 @@ import LegendsCardList from '../components/LegendsCardList.vue';
 import CivilizationsCardList from '../components/CivilizationsCardList.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData, LoadItemsOptions, TableHeader } from '../types/legends';
+import ExpandableCard from '../components/ExpandableCard.vue';
 import LineChart from '../components/LineChart.vue';
+import BarChart from '../components/BarChart.vue';
 
 const store = useWorldStore()
 const mapStore = useWorldMapStore()
 
 store.loadWorld();
 store.loadEventChartData()
+store.loadEventTypeChartData()
 mapStore.loadWorldMap('Default');
 
 const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
@@ -28,16 +31,16 @@ const loadEventCollections = async ({ page, itemsPerPage, sortBy }: LoadItemsOpt
     await store.loadEventCollections(page, itemsPerPage, sortBy)
 }
 
-const eventTableHeaders = [
+const eventTableHeaders: TableHeader[] = [
     { title: 'Date', key: 'date' },
     { title: 'Type', key: 'type' },
-    { title: 'Event', key: 'html' },
+    { title: 'Event', key: 'html', sortable: false },
 ]
 
 const eventCollectionTableHeaders: TableHeader[] = [
     { title: 'Start', key: 'startDate', align: 'center' },
     { title: 'End', key: 'endDate', align: 'center' },
-    { title: 'Name', key: 'html', align: 'start' },
+    { title: 'Name', key: 'html', align: 'start', sortable: false },
     { title: 'Type', key: 'type', align: 'start' },
     { title: 'Subtype', key: 'subtype', align: 'start' },
     { title: 'Chronicles', key: 'eventCollectionCount', align: 'end' },
@@ -74,8 +77,8 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     <v-icon class="mr-2" icon="mdi-map-search-outline" size="32px"></v-icon>
                 </template>
                 <v-card-text>
-                    <v-img width="320" height="320" class="position-relative ml-12 pixelated-image" :src="mapStore.worldMapMid"
-                        :cover="false" />
+                    <v-img width="320" height="320" class="position-relative ml-12 pixelated-image"
+                        :src="mapStore.worldMapMid" :cover="false" />
                 </v-card-text>
             </v-card>
         </v-col>
@@ -93,11 +96,10 @@ const eventCollectionTableHeaders: TableHeader[] = [
                 </v-card-text>
             </v-card>
         </v-col>
-        <v-col
-            v-if="store.world?.areaByOverworldRegions?.datasets != null &&
-                  store.world?.areaByOverworldRegions?.datasets?.length > 0 &&
-                  store.world?.areaByOverworldRegions?.datasets[0].data?.some(value => value > 0)"
-            cols="12" xl="4" lg="6" md="12">
+        <v-col v-if="store.world?.areaByOverworldRegions?.datasets != null &&
+            store.world?.areaByOverworldRegions?.datasets?.length > 0 &&
+            store.world?.areaByOverworldRegions?.datasets[0].data?.some(value => value > 0)" cols="12" xl="4" lg="6"
+            md="12">
             <v-card title="Area by Overworld Regions"
                 subtitle="A comparative view of the land distribution across the world" height="400" variant="text">
                 <template v-slot:prepend>
@@ -110,16 +112,42 @@ const eventCollectionTableHeaders: TableHeader[] = [
         </v-col>
     </v-row>
     <v-row>
-        <v-col v-if="store.world?.mainCivilizations != null && store.world?.mainCivilizations.length > 0" cols="12" xl="6" lg="12">
-            <CivilizationsCardList :icon="'mdi-account-multiple'" :title="'Active Civilizations'" :subtitle="'The thriving societies that continue to shape the world with their influence and power'" :list="store.world?.mainCivilizations ?? []" />
+        <v-col v-if="store.world?.mainCivilizations != null && store.world?.mainCivilizations.length > 0" cols="12"
+            xl="6" lg="12">
+            <CivilizationsCardList :icon="'mdi-account-multiple'" :title="'Active Civilizations'"
+                :subtitle="'The thriving societies that continue to shape the world with their influence and power'"
+                :list="store.world?.mainCivilizations ?? []" />
         </v-col>
-        <v-col v-if="store.world?.mainCivilizationsLost != null && store.world?.mainCivilizationsLost.length > 0" cols="12" xl="6" lg="12">
-            <CivilizationsCardList :icon="'mdi-account-multiple-remove-outline'" :title="'Lost Civilizations'" :subtitle="'The remnants of once-great societies that have faded into history'" :list="store.world?.mainCivilizationsLost ?? []" />
+        <v-col v-if="store.world?.mainCivilizationsLost != null && store.world?.mainCivilizationsLost.length > 0"
+            cols="12" xl="6" lg="12">
+            <CivilizationsCardList :icon="'mdi-account-multiple-remove-outline'" :title="'Lost Civilizations'"
+                :subtitle="'The remnants of once-great societies that have faded into history'"
+                :list="store.world?.mainCivilizationsLost ?? []" />
         </v-col>
     </v-row>
     <v-row>
         <v-col>
-            <v-card title="Events" :subtitle="'A timeline of events for ' + store.world?.name" variant="text">
+            <ExpandableCard title="Events" :subtitle="'An overview of events for ' + store.world?.name"
+                icon="mdi-calendar-clock" :height="'auto'">
+                <template #compact-content>
+                    <div class="ml-12">
+                        <LineChart v-if="store.objectEventChartData != null" :chart-data="store.objectEventChartData" />
+                        <v-data-table-server v-model:items-per-page="store.objectEventsPerPage"
+                            :headers="eventTableHeaders" :items="store.objectEvents"
+                            :items-length="store.objectEventsTotalItems" :loading="store.isLoading" item-value="id"
+                            :items-per-page-options="store.itemsPerPageOptions" @update:options="loadEvents">
+                            <template v-slot:item.html="{ value }">
+                                <span v-html="value"></span>
+                            </template>
+                        </v-data-table-server>
+                    </div>
+                </template>
+                <template #expanded-content>
+                    <BarChart v-if="store.objectEventTypeChartData != null"
+                        :chart-data="store.objectEventTypeChartData" />
+                </template>
+            </ExpandableCard>
+            <!-- <v-card title="Events" :subtitle="'A timeline of events for ' + store.world?.name" variant="text">
                 <template v-slot:prepend>
                     <v-icon class="mr-2" icon="mdi-calendar-clock" size="32px"></v-icon>
                 </template>
@@ -133,7 +161,7 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     </template>
                 </v-data-table-server>
                 </v-card-text>
-            </v-card>
+            </v-card> -->
         </v-col>
     </v-row>
     <v-row>
@@ -143,16 +171,18 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     <v-icon class="mr-2" icon="mdi-calendar-clock" size="32px"></v-icon>
                 </template>
                 <v-card-text class="ml-12">
-                    <v-data-table-server v-model:items-per-page="store.objectEventCollectionsPerPage" :headers="eventCollectionTableHeaders" :items="store.objectEventCollections"
-                    :items-length="store.objectEventCollectionsTotalItems" :loading="store.isLoading" item-value="id" :items-per-page-options="store.itemsPerPageOptions"
-                    @update:options="loadEventCollections">
-                    <template v-slot:item.subtype="{ value }">
-                        <span v-html="value"></span>
-                    </template>
-                    <template v-slot:item.html="{ value }">
-                        <span v-html="value"></span>
-                    </template>
-                </v-data-table-server>
+                    <v-data-table-server v-model:items-per-page="store.objectEventCollectionsPerPage"
+                        :headers="eventCollectionTableHeaders" :items="store.objectEventCollections"
+                        :items-length="store.objectEventCollectionsTotalItems" :loading="store.isLoading"
+                        item-value="id" :items-per-page-options="store.itemsPerPageOptions"
+                        @update:options="loadEventCollections">
+                        <template v-slot:item.subtype="{ value }">
+                            <span v-html="value"></span>
+                        </template>
+                        <template v-slot:item.html="{ value }">
+                            <span v-html="value"></span>
+                        </template>
+                    </v-data-table-server>
                 </v-card-text>
             </v-card>
         </v-col>

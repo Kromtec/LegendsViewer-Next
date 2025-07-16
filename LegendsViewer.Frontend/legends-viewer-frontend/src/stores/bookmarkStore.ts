@@ -44,7 +44,7 @@ export const useBookmarkStore = defineStore('bookmark', {
           existingBookmark.state = 'Default';
         }
         this.isLoadingNewWorld = false;
-        this.bookmarkError = error
+        this.bookmarkError = error.title ?? error.type ?? '';
       } else if (data) {
         const newBookmark = data as Bookmark;
         if (newBookmark.worldName == null || newBookmark.worldName.length == 0) {

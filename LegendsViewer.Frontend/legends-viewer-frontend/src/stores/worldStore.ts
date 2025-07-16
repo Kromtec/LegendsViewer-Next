@@ -20,13 +20,14 @@ export const useWorldStore = defineStore('world', {
         objectEventCollectionsPerPage: 10 as number,
 
         itemsPerPageOptions: [
-            {value: 10, title: '10'},
-            {value: 25, title: '25'},
-            {value: 50, title: '50'},
-            {value: 100, title: '100'}
-          ],
+            { value: 10, title: '10' },
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: '100' }
+        ],
 
         objectEventChartData: null as ChartDataDto | null,
+        objectEventTypeChartData: null as ChartDataDto | null,
         isLoading: false as boolean
     }),
     actions: {
@@ -98,5 +99,17 @@ export const useWorldStore = defineStore('world', {
                 this.isLoading = false;
             }
         },
-},
+        async loadEventTypeChartData() {
+            this.isLoading = true;
+            const { data, error } = await client.GET("/api/World/eventtypechart");
+
+            if (error !== undefined) {
+                this.isLoading = false;
+                console.error(error);
+            } else if (data) {
+                this.objectEventTypeChartData = data as ChartDataDto;
+                this.isLoading = false;
+            }
+        },
+    },
 })

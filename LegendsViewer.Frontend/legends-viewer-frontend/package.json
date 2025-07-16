@@ -10,28 +10,28 @@
     "generate-api-schema": "npx openapi-typescript http://localhost:5054/swagger/v1/swagger.json -o ./src/generated/api-schema.d.ts"
   },
   "dependencies": {
-    "chart.js": "^4.4.4",
-    "cytoscape": "^3.30.2",
+    "chart.js": "^4.4.8",
+    "cytoscape": "^3.31.0",
     "cytoscape-cola": "^2.5.1",
     "cytoscape-dagre": "^2.5.0",
     "leaflet": "^1.9.4",
-    "openapi-fetch": "^0.12.2",
-    "pinia": "^2.2.2",
+    "openapi-fetch": "^0.13.4",
+    "pinia": "^3.0.1",
     "tippy.js": "^6.3.7",
-    "vue": "^3.4.37",
-    "vue-chartjs": "^5.3.1",
-    "vue-router": "^4.4.5",
-    "vuetify": "^3.7.2"
+    "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.2",
+    "vue-router": "^4.5.0",
+    "vuetify": "^3.7.14"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
-    "@types/cytoscape": "^3.21.8",
+    "@types/cytoscape": "^3.21.9",
     "@types/cytoscape-dagre": "^2.3.3",
-    "@types/leaflet": "^1.9.12",
-    "@vitejs/plugin-vue": "^5.1.2",
-    "openapi-typescript": "^7.4.1",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.1",
-    "vue-tsc": "^2.0.29"
+    "@types/leaflet": "^1.9.16",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "openapi-typescript": "^7.6.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vue-tsc": "^2.2.4"
   }
 }

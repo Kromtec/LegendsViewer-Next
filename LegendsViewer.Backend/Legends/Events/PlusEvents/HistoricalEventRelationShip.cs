@@ -3,6 +3,7 @@ using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.Various;
 using LegendsViewer.Backend.Legends.WorldObjects;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events.PlusEvents;
 
@@ -93,42 +94,34 @@ public class HistoricalEventRelationShip : WorldEvent
 
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime();
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string source = SourceHf != null ? SourceHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
+        string target = TargetHf != null ? TargetHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
+        string relationship = RelationshipType.GetDescription().ToLower();
+
         switch (RelationshipType)
         {
             case VagueRelationshipType.JealousObsession:
-                eventString += SourceHf != null ? SourceHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " became infatuated with ";
-                eventString += TargetHf != null ? TargetHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
+                eventString.Append($"{source} became infatuated with {target}");
                 break;
             case VagueRelationshipType.Lieutenant:
-                eventString += SourceHf != null ? SourceHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " recognized ";
-                eventString += TargetHf != null ? TargetHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " as a capable ";
-                eventString += RelationshipType.GetDescription().ToLower();
+                eventString.Append($"{source} recognized {target} as a capable {relationship}");
                 break;
             case VagueRelationshipType.FormerLover:
-                eventString += SourceHf != null ? SourceHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " and ";
-                eventString += TargetHf != null ? TargetHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " broke up";
+                eventString.Append($"{source} and {target} broke up");
                 break;
             default:
-                eventString += SourceHf != null ? SourceHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " and ";
-                eventString += TargetHf != null ? TargetHf.ToLink(link, pov, this) : "UNKNOWN HISTORICAL FIGURE";
-                eventString += " became ";
-                eventString += RelationshipType.GetDescription().ToLower() + "s";
+                eventString.Append($"{source} and {target} became {relationship}s");
                 break;
         }
 
         if (Site != null)
         {
-            eventString += " in ";
-            eventString += Site.ToLink(link, pov, this);
+            eventString.Append($" in {Site.ToLink(link, pov, this)}");
         }
-        eventString += ".";
-        return eventString;
+
+        eventString.Append(".");
+        return eventString.ToString();
     }
 }

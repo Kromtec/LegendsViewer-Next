@@ -56,6 +56,8 @@ const beforeLists: ComputedRef<LegendLinkListData[]> = computed(() => [
     { title: 'Worshipped Deities', items: store.object?.worshippedDeities ?? [], icon: "mdi-hand-heart-outline", subtitle: "The divine beings revered by the historical figure, shaping their beliefs and actions" },
     { title: 'Journey Pets', items: store.object?.journeyPets ?? [], icon: "mdi-paw", subtitle: "Trusted animal companions that accompanied this figure on their travels" },
     { title: 'Noble Positions', items: store.object?.positionList ?? [], icon: "mdi-seal", subtitle: "The ruling elite, guiding the fate of realms and people" },
+    { title: 'Worshipping Figures', items: store.object?.worshippingFiguresList ?? [], icon: "mdi-meditation", subtitle: "Historical figures who revere this creature, deity or force of nature" },
+    { title: 'Worshipping Entities', items: store.object?.worshippingEntitiesList ?? [], icon: "mdi-crowd", subtitle: "Groups or organizations that hold this deity in reverence" },
 ]);
 
 const afterLists: ComputedRef<LegendLinkListData[]> = computed(() => [

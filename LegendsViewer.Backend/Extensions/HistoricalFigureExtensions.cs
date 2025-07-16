@@ -1,5 +1,6 @@
 ﻿using LegendsViewer.Backend.Legends.Cytoscape;
 using LegendsViewer.Backend.Legends.Enums;
+using LegendsViewer.Backend.Legends.WorldLinks;
 using LegendsViewer.Backend.Legends.WorldObjects;
 using LegendsViewer.Backend.Utilities;
 using System.Net;
@@ -197,5 +198,34 @@ public static class HistoricalFigureExtensions
         {
             Classes = classes
         };
+    }
+
+    public static void AddWorshipper(this HistoricalFigure? worshipped, HistoricalFigure? worshipper, int strength)
+    {
+        if (worshipped == null || worshipper == null)
+        {
+            return;
+        }
+        worshipped.WorshippingFigures ??= [];
+        var entry = (worshipper, strength);
+        if (worshipped.WorshippingFigures.Contains(entry))
+        {
+            return;
+        }
+        worshipped.WorshippingFigures.Add(entry);
+    }
+
+    public static void AddWorshipper(this HistoricalFigure? worshipped, Entity? worshipper)
+    {
+        if (worshipped == null || worshipper == null)
+        {
+            return;
+        }
+        worshipped.WorshippingEntities ??= [];
+        if (worshipped.WorshippingEntities.Contains(worshipper))
+        {
+            return;
+        }
+        worshipped.WorshippingEntities.Add(worshipper);
     }
 }

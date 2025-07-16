@@ -40,6 +40,28 @@ public class Entity : WorldObject, IHasCoordinates
                     Subtitle = associatedSpheres
                 });
             }
+            if (Worshipped.Count == 0 && EntityEntityLinks.Count > 0)
+            {
+                foreach (EntityEntityLink link in EntityEntityLinks)
+                {
+                    var deity = link.Target?.Worshipped?.FirstOrDefault();
+                    if (deity == null)
+                    {
+                        continue;
+                    }
+                    string associatedSpheres = string.Join(", ", deity.Spheres);
+                    var newItem = new ListItemDto
+                    {
+                        Title = $"{deity.ToLink(true, this)}",
+                        Subtitle = associatedSpheres
+                    };
+                    if (list.Exists(existingItem => existingItem.Title == newItem.Title))
+                    {
+                        continue;
+                    }
+                    list.Add(newItem);
+                }
+            }
             return list;
         }
     }
@@ -375,7 +397,7 @@ public class Entity : WorldObject, IHasCoordinates
                             Href = $"/war/{item.Id}",
                             BackgroundColor = item.Attacker.LineColor.ToRgbaString(0.6f),
                             ForegroundColor = Formatting.GetReadableForegroundColor(item.Attacker.LineColor),
-                            Width = edgeWidth > 15 ? 15 : edgeWidth == 0 ? 1: edgeWidth,
+                            Width = edgeWidth > 15 ? 15 : edgeWidth == 0 ? 1 : edgeWidth,
                             Label = $"{item.DeathCount} ✝",
                             Tooltip = $"{item.ToLink(true, item)}<br/>{item.Subtype}"
                         }));
@@ -554,6 +576,7 @@ public class Entity : WorldObject, IHasCoordinates
                     if (worshippedDeity != null)
                     {
                         Worshipped.Add(worshippedDeity);
+                        worshippedDeity.AddWorshipper(this);
                     }
                     break;
                 //case "claims":

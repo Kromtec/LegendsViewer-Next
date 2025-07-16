@@ -1,4 +1,5 @@
 ﻿
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends;
 using LegendsViewer.Backend.Legends.Bookmarks;
 using LegendsViewer.Backend.Legends.Interfaces;
@@ -37,6 +38,7 @@ public class Program
         builder.Services.AddSingleton<IWorld, World>();
         builder.Services.AddSingleton<IWorldMapImageGenerator, WorldMapImageGenerator>();
         builder.Services.AddSingleton<IBookmarkService, BookmarkService>();
+        builder.Services.AddClassicRepositories();
 
         builder.Services.AddControllers()
             .AddJsonOptions(options =>

@@ -4,6 +4,7 @@ using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.Various;
 using LegendsViewer.Backend.Legends.WorldObjects;
+using System.Text;
 
 namespace LegendsViewer.Backend.Legends.Events;
 
@@ -36,7 +37,7 @@ public class AddHfEntityLink : WorldEvent, IFeatured
                     break;
                 case "link":
                 case "link_type":
-                    switch (property.Value.Replace("_", " "))
+                    switch (property.Value)
                     {
                         case "position":
                             LinkType = HfEntityLinkType.Position;
@@ -57,6 +58,7 @@ public class AddHfEntityLink : WorldEvent, IFeatured
                             LinkType = HfEntityLinkType.Squad;
                             break;
                         case "former member":
+                        case "former_member":
                             LinkType = HfEntityLinkType.FormerMember;
                             break;
                         default:
@@ -89,106 +91,83 @@ public class AddHfEntityLink : WorldEvent, IFeatured
 
     public override string Print(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = GetYearTime();
-        if (HistoricalFigure != null)
-        {
-            eventString += HistoricalFigure.ToLink(link, pov, this);
-        }
-        else
-        {
-            eventString += "UNKNOWN HISTORICAL FIGURE";
-        }
+        StringBuilder eventString = new StringBuilder(GetYearTime());
+
+        string figure = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN HISTORICAL FIGURE";
+        eventString.Append(figure).Append(' ');
 
         switch (LinkType)
         {
             case HfEntityLinkType.Prisoner:
-                eventString += " was imprisoned by ";
+                eventString.Append("was imprisoned by ");
                 break;
             case HfEntityLinkType.Slave:
-                eventString += " was enslaved by ";
+                eventString.Append("was enslaved by ");
                 break;
             case HfEntityLinkType.Enemy:
-                eventString += " became an enemy of ";
+                eventString.Append("became an enemy of ");
                 break;
             case HfEntityLinkType.Member:
-                eventString += " became a member of ";
+                eventString.Append("became a member of ");
                 break;
             case HfEntityLinkType.FormerMember:
-                eventString += " became a former member of ";
+                eventString.Append("became a former member of ");
                 break;
             case HfEntityLinkType.Squad:
             case HfEntityLinkType.Position:
-                EntityPosition? position = Entity?.EntityPositions.Find(pos => string.Equals(pos.Name, Position, StringComparison.OrdinalIgnoreCase) || pos.Id == PositionId);
-                if (position != null && HistoricalFigure?.Caste != null)
-                {
-                    string positionName = position.GetTitleByCaste(HistoricalFigure.Caste);
-                    eventString += " became the " + positionName + " of ";
-                }
-                else if (!string.IsNullOrWhiteSpace(Position))
-                {
-                    eventString += " became the " + Position + " of ";
-                }
-                else
-                {
-                    eventString += " got an honorable position in ";
-                }
+                EntityPosition? position = Entity?.EntityPositions.Find(pos =>
+                    string.Equals(pos.Name, Position, StringComparison.OrdinalIgnoreCase) || pos.Id == PositionId);
+                string? positionName = (position != null && HistoricalFigure?.Caste != null)
+                    ? position.GetTitleByCaste(HistoricalFigure.Caste)
+                    : Position;
+
+                eventString.Append(string.IsNullOrWhiteSpace(positionName)
+                    ? "got an honorable position in "
+                    : $"became the {positionName} of ");
                 break;
             default:
-                eventString += " linked to ";
+                eventString.Append("linked to ");
                 break;
         }
 
-        eventString += Entity?.ToLink(link, pov, this);
-        eventString += PrintParentCollection(link, pov);
+        eventString.Append(Entity?.ToLink(link, pov, this) ?? "UNKNOWN ENTITY");
+        eventString.Append(PrintParentCollection(link, pov));
+
         if (AppointerHf != null)
         {
-            eventString += ", appointed by ";
-            eventString += AppointerHf.ToLink(link, pov, this);
+            eventString.Append($", appointed by {AppointerHf.ToLink(link, pov, this)}");
         }
+
         if (PromiseToHf != null)
         {
-            eventString += " as promised to ";
-            eventString += PromiseToHf.ToLink(link, pov, this);
+            eventString.Append($" as promised to {PromiseToHf.ToLink(link, pov, this)}");
         }
-        eventString += ".";
-        return eventString;
+
+        eventString.Append('.');
+        return eventString.ToString();
     }
 
     public string PrintFeature(bool link = true, DwarfObject? pov = null)
     {
-        string eventString = "";
-        eventString += "the ascension of ";
-        if (HistoricalFigure != null)
-        {
-            eventString += HistoricalFigure.ToLink(link, pov, this);
-        }
-        else
-        {
-            eventString += "UNKNOWN HISTORICAL FIGURE";
-        }
+        StringBuilder eventString = new StringBuilder("the ascension of ");
 
-        eventString += " to the position of ";
+        string figure = HistoricalFigure?.ToLink(link, pov, this) ?? "UNKNOWN HISTORICAL FIGURE";
+        eventString.Append(figure).Append(" to the position of ");
+
         if (Position != null)
         {
             EntityPosition? position = Entity?.EntityPositions.Find(pos => string.Equals(pos.Name, Position, StringComparison.OrdinalIgnoreCase));
-            if (position != null && HistoricalFigure?.Caste != null)
-            {
-                string positionName = position.GetTitleByCaste(HistoricalFigure.Caste);
-                eventString += positionName;
-            }
-            else
-            {
-                eventString += Position;
-            }
+            string positionName = (position != null && HistoricalFigure?.Caste != null) ? position.GetTitleByCaste(HistoricalFigure.Caste) : Position;
+            eventString.Append(positionName);
         }
         else
         {
-            eventString += "UNKNOWN POSITION";
+            eventString.Append("UNKNOWN POSITION");
         }
-        eventString += " of ";
-        eventString += Entity?.ToLink(link, pov, this) ?? "UNKNOWN ENTITY";
-        eventString += " in ";
-        eventString += Year;
-        return eventString;
+
+        eventString.Append(" of ").Append(Entity?.ToLink(link, pov, this) ?? "UNKNOWN ENTITY");
+        eventString.Append(" in ").Append(Year);
+
+        return eventString.ToString();
     }
 }
