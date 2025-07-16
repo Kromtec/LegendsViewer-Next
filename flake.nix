@@ -45,7 +45,7 @@
           packages.default = stdenv.mkDerivation rec {
             inherit nativeBuildInputs;
             pname = "LegendsViewer-Next";
-            version = "1.1.2";
+            version = "1.2.0";
 
             src = pkgs.fetchzip {
               url =
