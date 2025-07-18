@@ -484,4 +484,4 @@ $RECYCLE.BIN/
 *.swp
 
 # Nix build result folder
-result
+nix/result

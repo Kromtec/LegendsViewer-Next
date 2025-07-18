@@ -35,7 +35,7 @@
           copyDesktopItems
           (writeShellScriptBin "npm" "")
         ];
-        src = ./.;
+        src = ../.;
 
         # # Setup Release Info
         repoOwner = "Kromtec";
