@@ -6,13 +6,21 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, watch, ref, onBeforeUnmount } from 'vue';
+import { useRouter, type Router } from 'vue-router';
 import { useWorldStore } from '../stores/worldStore';
 import { useWorldMapStore } from '../stores/mapStore';
-import L, { Map, ImageOverlay, Layer, LayerGroup } from 'leaflet';
+import L, { Map as LeafletMap, ImageOverlay, Layer, LayerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { components } from '../generated/api-schema'; // Import from the OpenAPI schema
 
 export type SiteType = components['schemas']['SiteType'];
+type SiteMarker = components['schemas']['SiteMarkerDto'];
+
+interface SiteAtCoordinate {
+  marker: SiteMarker;
+  x: number;
+  y: number;
+}
 
 interface MarkerConfig {
   shape: 'circle' | 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'star';
@@ -122,6 +130,79 @@ function createStar(center: L.LatLngExpression, points: number, outer: number, i
   return L.polygon(vertices, { color });
 }
 
+function coordinateKey(x: number, y: number): string {
+  return `${x},${y}`;
+}
+
+function appendRichContent(container: HTMLElement, html: string | null | undefined): void {
+  if (!html) return;
+
+  const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
+  for (const child of [...parsedDocument.body.childNodes]) {
+    container.appendChild(document.importNode(child, true));
+  }
+}
+
+function wireInternalLinks(container: HTMLElement, router: Router): void {
+  for (const link of container.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+    const href = link.getAttribute('href');
+    if (!href?.startsWith('/')) continue;
+
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      void router.push(href);
+    });
+  }
+}
+
+function groupSitesByCoordinate(siteMarkers: SiteMarker[]): Map<string, SiteAtCoordinate[]> {
+  const sitesByCoordinate = new Map<string, SiteAtCoordinate[]>();
+
+  for (const marker of siteMarkers) {
+    for (const coordinate of marker.coordinates ?? []) {
+      if (coordinate.x == null || coordinate.y == null) continue;
+
+      const key = coordinateKey(coordinate.x, coordinate.y);
+      const sites = sitesByCoordinate.get(key) ?? [];
+      if (!sites.some(site => site.marker === marker)) {
+        sites.push({ marker, x: coordinate.x, y: coordinate.y });
+      }
+      sitesByCoordinate.set(key, sites);
+    }
+  }
+
+  return sitesByCoordinate;
+}
+
+function createSitePopup(sites: SiteAtCoordinate[], router: Router): HTMLElement {
+  const container = document.createElement('div');
+  container.className = 'site-picker';
+
+  if (sites.length > 1) {
+    container.classList.add('site-picker--multiple');
+    const heading = document.createElement('strong');
+    heading.className = 'site-picker__heading';
+    heading.textContent = `${sites.length} sites at this location`;
+    container.appendChild(heading);
+  }
+
+  for (const { marker } of sites) {
+    const item = document.createElement('div');
+    item.className = 'site-picker__item';
+
+    if (marker.name) appendRichContent(item, marker.name);
+    else item.append('Unknown site');
+    item.append(document.createElement('br'));
+    item.append(marker.typeAsString ?? 'Unknown');
+    item.append(document.createElement('br'), document.createElement('br'));
+    appendRichContent(item, marker.owner ?? 'Others');
+    wireInternalLinks(item, router);
+    container.appendChild(item);
+  }
+
+  return container;
+}
+
 function addCustomControl(map: L.Map, ownerLayers: Record<string, L.LayerGroup>) {
   const customControl = L.Control.extend({
     options: {
@@ -178,12 +259,28 @@ export default defineComponent({
   setup() {
     const worldStore = useWorldStore();
     const mapStore = useWorldMapStore();
-    const leafletMap = ref<Map>();
+    const router = useRouter();
+    const leafletMap = ref<LeafletMap>();
     const currentOverlay = ref<ImageOverlay | null>(null);
+    const siteCountLayer = ref<LayerGroup | null>(null);
 
     // This will hold the LayerGroups for different owners
     const ownerLayers: Record<string, LayerGroup> = {};
     const controlLayers = ref<L.Control.Layers>();
+
+    const syncSiteCountLayer = () => {
+      if (!leafletMap.value || !siteCountLayer.value) return;
+
+      const countLayer = siteCountLayer.value as unknown as Layer;
+      const shouldShow = leafletMap.value.getZoom() === leafletMap.value.getMaxZoom();
+      const isVisible = leafletMap.value.hasLayer(countLayer);
+
+      if (shouldShow && !isVisible) {
+        leafletMap.value.addLayer(countLayer);
+      } else if (!shouldShow && isVisible) {
+        leafletMap.value.removeLayer(countLayer);
+      }
+    };
 
     const initMap = async () => {
       if (!leafletMap.value) {
@@ -193,6 +290,7 @@ export default defineComponent({
           minZoom: -2,
           maxZoom: 2
         });
+        leafletMap.value.on('zoomend', syncSiteCountLayer);
       }
       await worldStore.loadWorld();
       await mapStore.loadWorldMap('Large');
@@ -209,6 +307,10 @@ export default defineComponent({
       if (currentOverlay.value) {
         leafletMap.value.removeLayer(currentOverlay.value as unknown as Layer);
       }
+      if (siteCountLayer.value) {
+        leafletMap.value.removeLayer(siteCountLayer.value as unknown as Layer);
+        siteCountLayer.value = null;
+      }
 
       const scale = 8;
       const width = (worldStore.world.width ?? 0);
@@ -222,6 +324,7 @@ export default defineComponent({
 
       if (worldStore.world.siteMarkers != null) {
         const layersControl: Record<string, LayerGroup> = {};
+        const sitesByCoordinate = groupSitesByCoordinate(worldStore.world.siteMarkers);
 
         // Iterate over the site markers
         for (const siteMarker of worldStore.world.siteMarkers) {
@@ -241,7 +344,11 @@ export default defineComponent({
                   [(height - coordinate.y) * scale - 0.5 * scale, coordinate.x * scale + 0.5 * scale]
                 );
 
-                marker.bindPopup(`${siteMarker.name}<br>${siteMarker.typeAsString}<br><br>${siteMarker.owner}`);
+                const sitesAtCoordinate = sitesByCoordinate.get(coordinateKey(coordinate.x, coordinate.y)) ?? [];
+                marker.bindPopup(
+                  createSitePopup(sitesAtCoordinate, router),
+                  sitesAtCoordinate.length > 1 ? { minWidth: 220 } : undefined
+                );
                 ownerLayers[ownerText].addLayer(marker); // Add the marker to the owner's layer
               }
             }
@@ -255,6 +362,30 @@ export default defineComponent({
         if (!controlLayers.value) {
           controlLayers.value = L.control.layers(undefined, layersControl).addTo(leafletMap.value);
         }
+
+        const countLayer = new L.LayerGroup();
+        for (const sites of sitesByCoordinate.values()) {
+          if (sites.length < 2) continue;
+
+          const { x, y } = sites[0];
+          const countBadge = L.marker(
+            [(height - y) * scale - 0.5 * scale, x * scale + 0.5 * scale],
+            {
+              icon: L.divIcon({
+                className: 'site-count-marker',
+                html: `<span>${sites.length}</span>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6],
+              }),
+              interactive: false,
+              keyboard: false,
+              zIndexOffset: 1000,
+            }
+          );
+          countLayer.addLayer(countBadge);
+        }
+        siteCountLayer.value = countLayer;
+        syncSiteCountLayer();
       }
 
       leafletMap.value.fitBounds(bounds);
@@ -309,5 +440,38 @@ export default defineComponent({
 
 .leaflet-control-layers-overlays label {
   margin-top: 4px;
+}
+
+.site-picker__heading {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.site-picker--multiple .site-picker__item {
+  padding: 8px 0;
+}
+
+.site-picker--multiple .site-picker__item + .site-picker__item {
+  border-top: 1px solid rgba(127, 127, 127, 0.35);
+}
+
+.site-count-marker {
+  pointer-events: none;
+}
+
+.site-count-marker span {
+  display: flex;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: rgba(25, 25, 25, 0.72);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
 }
 </style>
