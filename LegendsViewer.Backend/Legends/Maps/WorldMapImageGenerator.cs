@@ -215,7 +215,38 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
         // Define stroke thickness (minimum 3px for high visibility)
         float strokeThickness = Math.Max(3.0f, tileSize * 0.8f);
 
-        // 1. Black outer shadow ring for maximum contrast against any terrain background
+        // 1. Outer dashed radar ring for enhanced target acquisition area
+        using (var dashEffect = SKPathEffect.CreateDash(new float[] { 8.0f, 6.0f }, 0))
+        {
+            float outerRadiusX = pixelRadiusX * 1.7f;
+            float outerRadiusY = pixelRadiusY * 1.7f;
+
+            using (var paint = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = SKColors.Black,
+                StrokeWidth = strokeThickness + 3.0f,
+                PathEffect = dashEffect,
+                IsAntialias = true
+            })
+            {
+                canvas.DrawOval(pixelCenterX, pixelCenterY, outerRadiusX, outerRadiusY, paint);
+            }
+
+            using (var paint = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = SKColors.Yellow,
+                StrokeWidth = strokeThickness,
+                PathEffect = dashEffect,
+                IsAntialias = true
+            })
+            {
+                canvas.DrawOval(pixelCenterX, pixelCenterY, outerRadiusX, outerRadiusY, paint);
+            }
+        }
+
+        // 2. Black outer shadow ring for maximum contrast against any terrain background
         using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -227,7 +258,7 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
             canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
         }
 
-        // 2. Bright Yellow primary ring
+        // 3. Bright Yellow primary ring
         using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -239,7 +270,7 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
             canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
         }
 
-        // 3. Inner Red accent ring
+        // 4. Inner Red accent ring
         using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -251,11 +282,12 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
             canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
         }
 
-        // 4. Target Crosshair lines (Top, Bottom, Left, Right)
+        // 5. Full-canvas Edge-to-Edge Target Crosshair lines (Top, Bottom, Left, Right)
         float gap = 4.0f;
-        float tickLen = Math.Max(10.0f, pixelRadiusX * 0.5f);
+        float canvasWidth = canvas.DeviceClipBounds.Width;
+        float canvasHeight = canvas.DeviceClipBounds.Height;
 
-        // Black outline for crosshairs
+        // Black outline for full-canvas crosshairs
         using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -264,13 +296,17 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
             IsAntialias = true
         })
         {
-            canvas.DrawLine(pixelCenterX, pixelCenterY - pixelRadiusY - gap, pixelCenterX, pixelCenterY - pixelRadiusY - gap - tickLen, paint);
-            canvas.DrawLine(pixelCenterX, pixelCenterY + pixelRadiusY + gap, pixelCenterX, pixelCenterY + pixelRadiusY + gap + tickLen, paint);
-            canvas.DrawLine(pixelCenterX - pixelRadiusX - gap, pixelCenterY, pixelCenterX - pixelRadiusX - gap - tickLen, pixelCenterY, paint);
-            canvas.DrawLine(pixelCenterX + pixelRadiusX + gap, pixelCenterY, pixelCenterX + pixelRadiusX + gap + tickLen, pixelCenterY, paint);
+            // Top segment (from canvas top edge down to ring gap)
+            canvas.DrawLine(pixelCenterX, 0, pixelCenterX, Math.Max(0, pixelCenterY - pixelRadiusY - gap), paint);
+            // Bottom segment (from ring gap down to canvas bottom edge)
+            canvas.DrawLine(pixelCenterX, Math.Min(canvasHeight, pixelCenterY + pixelRadiusY + gap), pixelCenterX, canvasHeight, paint);
+            // Left segment (from canvas left edge to ring gap)
+            canvas.DrawLine(0, pixelCenterY, Math.Max(0, pixelCenterX - pixelRadiusX - gap), pixelCenterY, paint);
+            // Right segment (from ring gap to canvas right edge)
+            canvas.DrawLine(Math.Min(canvasWidth, pixelCenterX + pixelRadiusX + gap), pixelCenterY, canvasWidth, pixelCenterY, paint);
         }
 
-        // Bright Yellow inner for crosshairs
+        // Bright Yellow inner lines for full-canvas crosshairs
         using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -279,10 +315,31 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
             IsAntialias = true
         })
         {
-            canvas.DrawLine(pixelCenterX, pixelCenterY - pixelRadiusY - gap, pixelCenterX, pixelCenterY - pixelRadiusY - gap - tickLen, paint);
-            canvas.DrawLine(pixelCenterX, pixelCenterY + pixelRadiusY + gap, pixelCenterX, pixelCenterY + pixelRadiusY + gap + tickLen, paint);
-            canvas.DrawLine(pixelCenterX - pixelRadiusX - gap, pixelCenterY, pixelCenterX - pixelRadiusX - gap - tickLen, pixelCenterY, paint);
-            canvas.DrawLine(pixelCenterX + pixelRadiusX + gap, pixelCenterY, pixelCenterX + pixelRadiusX + gap + tickLen, pixelCenterY, paint);
+            canvas.DrawLine(pixelCenterX, 0, pixelCenterX, Math.Max(0, pixelCenterY - pixelRadiusY - gap), paint);
+            canvas.DrawLine(pixelCenterX, Math.Min(canvasHeight, pixelCenterY + pixelRadiusY + gap), pixelCenterX, canvasHeight, paint);
+            canvas.DrawLine(0, pixelCenterY, Math.Max(0, pixelCenterX - pixelRadiusX - gap), pixelCenterY, paint);
+            canvas.DrawLine(Math.Min(canvasWidth, pixelCenterX + pixelRadiusX + gap), pixelCenterY, canvasWidth, pixelCenterY, paint);
+        }
+
+        // 6. Target Center Dot
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            Color = SKColors.Red,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawCircle(pixelCenterX, pixelCenterY, Math.Max(2.5f, strokeThickness * 0.8f), paint);
+        }
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Yellow,
+            StrokeWidth = 1.5f,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawCircle(pixelCenterX, pixelCenterY, Math.Max(2.5f, strokeThickness * 0.8f), paint);
         }
     }
 
