@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue';
+import { ref, watch } from 'vue';
 import { vampireImageData, werebeastImageData, necromancerImageData } from '../FamilyTree.vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
@@ -80,9 +80,11 @@ const localRules = ref({
     DiedValue: null as number | null
 });
 
-// Whenever filters change (or on mount), update localRules
-watchEffect(() => {
-    const filters = props.filters ?? [];
+let isUpdatingFromProps = false;
+
+watch(() => props.filters, (filters) => {
+    if (!filters) return;
+    isUpdatingFromProps = true;
 
     localRules.value.Alive = findRuleValue(filters, "IsAlive");
     localRules.value.Deity = findRuleValue(filters, "IsDeity");
@@ -105,10 +107,12 @@ watchEffect(() => {
     localRules.value.DiedRuleActive = existsRule(filters, "DeathYear");
     localRules.value.DiedOperator = findRuleOperator(filters, "DeathYear");
     localRules.value.DiedValue = findRuleNumberValue(filters, "DeathYear");
-});
+
+    isUpdatingFromProps = false;
+}, { immediate: true, deep: true });
 
 watch(localRules, () => {
-    if (!props.filters) return;
+    if (isUpdatingFromProps || !props.filters) return;
     const filters = props.filters;
 
     // ALIVE and DEITY filter logic

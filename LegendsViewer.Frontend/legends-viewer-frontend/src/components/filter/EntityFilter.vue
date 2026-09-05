@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue';
+import { ref, watch } from 'vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
 import NumberFilter from './controls/NumberFilter.vue';
@@ -88,8 +88,11 @@ const localRules = ref({
     WarCountValue: null as number | null,
 });
 
-watchEffect(() => {
-    const filters = props.filters ?? [];
+let isUpdatingFromProps = false;
+
+watch(() => props.filters, (filters) => {
+    if (!filters) return;
+    isUpdatingFromProps = true;
 
     localRules.value.IsCiv = findRuleValue(filters, "IsCiv");
     localRules.value.HasCurrentSites = findRuleValue(filters, "HasCurrentSites");
@@ -103,10 +106,12 @@ watchEffect(() => {
     localRules.value.WarCountActive = existsRule(filters, "WarCount");
     localRules.value.WarCountOperator = findRuleOperator(filters, "WarCount");
     localRules.value.WarCountValue = findRuleNumberValue(filters, "WarCount");
-});
+
+    isUpdatingFromProps = false;
+}, { immediate: true, deep: true });
 
 watch(localRules, () => {
-    if (!props.filters) return;
+    if (isUpdatingFromProps || !props.filters) return;
     const filters = props.filters;
 
     // Boolean rules
