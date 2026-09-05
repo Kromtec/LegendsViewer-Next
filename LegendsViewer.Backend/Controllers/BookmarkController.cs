@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using LegendsViewer.Backend.Legends.Bookmarks;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Maps;
@@ -122,8 +122,11 @@ public class BookmarkController(
 
             logger.LogInformation($"Start loading world '{regionId}' from '{directoryName}'");
 
-            await _worldMapImageGenerator.LoadExportedWorldMapAsync(mapFileName);
-            await _worldDataService.ParseAsync(xmlFileName, xmlPlusFileName, historyFileName, sitesAndPopsFileName, mapFileName);
+            await Task.Run(async () =>
+            {
+                await _worldMapImageGenerator.LoadExportedWorldMapAsync(mapFileName);
+                await _worldDataService.ParseAsync(xmlFileName, xmlPlusFileName, historyFileName, sitesAndPopsFileName, mapFileName);
+            });
 
             logger.LogInformation(_worldDataService.Log.ToString());
 
