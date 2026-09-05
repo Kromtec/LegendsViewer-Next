@@ -436,7 +436,7 @@ export default defineComponent({
         if (!response.ok) return;
         const data = await response.json();
 
-        if (data) {
+        if (data && data.coordinates && data.coordinates.length > 0) {
           const { minX, maxX, minY, maxY, centerX, centerY } = data;
           if (minX != null && maxX != null && minY != null && maxY != null) {
             if (minX === maxX && minY === maxY) {
@@ -556,14 +556,14 @@ export default defineComponent({
         syncSiteCountLayer();
       }
 
-      // Check if target object is specified in route query params
       const queryType = route.query.type as string | undefined;
       const queryId = route.query.id ? parseInt(route.query.id as string, 10) : undefined;
 
+      // Always fit map bounds first as default view
+      leafletMap.value.fitBounds(bounds);
+
       if (queryType && queryId && !isNaN(queryId)) {
         void handleObjectFocus(queryType, queryId);
-      } else {
-        leafletMap.value.fitBounds(bounds);
       }
     };
 

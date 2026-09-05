@@ -193,6 +193,11 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
 
     private static void EncircleObject(int tileSize, IHasCoordinates objectWithCoordinates, SKCanvas canvas)
     {
+        if (objectWithCoordinates == null || objectWithCoordinates.Coordinates == null || objectWithCoordinates.Coordinates.Count == 0)
+        {
+            return;
+        }
+
         // Calculate the center of the object
         var centerX = objectWithCoordinates.CenterX();
         var centerY = objectWithCoordinates.CenterY();
