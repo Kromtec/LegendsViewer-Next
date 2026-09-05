@@ -1103,5 +1103,64 @@ public class Entity : WorldObject, IHasCoordinates
 
         return item;
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals(nameof(IsCiv), StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(IsCiv))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("HasCurrentSites", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(CurrentSites.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("WorshipsDeity", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Worshipped.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals(nameof(EntityType), StringComparison.InvariantCultureIgnoreCase))
+            {
+                string entityTypeStr = EntityType.ToString();
+                string typeDescription = EntityType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !entityTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !typeDescription.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (entityTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     typeDescription.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            if (rule.PropertyName.Equals("CurrentSitesCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleSiteCount) &&
+                rule.ViolatesIntegerCriteria(CurrentSites.Count, ruleSiteCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("WarCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleWarCount) &&
+                rule.ViolatesIntegerCriteria(Wars.Count, ruleWarCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 
