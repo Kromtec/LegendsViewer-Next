@@ -1,9 +1,11 @@
-﻿using LegendsViewer.Backend.Legends.WorldObjects;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Legends.WorldObjects;
 using Microsoft.AspNetCore.Mvc;
 using LegendsViewer.Backend.Legends.EventCollections;
 using LegendsViewer.Backend.DataAccess.Repositories.Interfaces;
 
 namespace LegendsViewer.Backend.Controllers;
+
 
 public class DanceFormController(IWorldObjectRepository<DanceForm> repository) : WorldObjectGenericController<DanceForm>(repository)
 {
@@ -52,6 +54,19 @@ public class EntityController(IWorldObjectRepository<Entity> repository) : World
     public ActionResult<List<Entity>> GetMainCivilizations()
     {
         return Ok(Repository.GetAllElements().Where(x => x.IsCiv || (x.EntityType == Legends.Enums.EntityType.Civilization && x.SiteHistory.Count > 0)));
+    }
+
+    [HttpGet("{id}/monarchs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<List<LeaderTimelineDto>> GetMonarchTimelines([FromRoute] int id)
+    {
+        Entity? entity = Repository.GetById(id);
+        if (entity == null)
+        {
+            return NotFound();
+        }
+        return Ok(entity.GetLeaderTimelines());
     }
 }
 

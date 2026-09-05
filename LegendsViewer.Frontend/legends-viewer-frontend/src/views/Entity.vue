@@ -5,15 +5,22 @@ import WorldObjectPage from '../components/WorldObjectPage.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import WarfareGraph from '../components/WarfareGraph.vue';
+import MonarchTimeline from '../components/MonarchTimeline.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData } from '../types/legends';
 
 const store = useEntityStore()
 const mapStore = useEntityMapStore()
 
-const beforeLists: ComputedRef<LegendLinkListData[]> = computed(() => [
-    { title: 'Wars', items: store.object?.warList ?? [], icon: "mdi-sword-cross", subtitle: "Wars shaping the realm’s history" },
-    { title: 'Noble Positions', items: store.object?.entityPositionAssignmentsList ?? [], icon: "mdi-seal", subtitle: "The ruling elite, guiding the fate of realms and people" },
+const warsList: ComputedRef<LegendLinkListData> = computed(() => ({
+    title: 'Wars', items: store.object?.warList ?? [], icon: "mdi-sword-cross", subtitle: "Wars shaping the realm’s history"
+}));
+
+const noblePositionsList: ComputedRef<LegendLinkListData> = computed(() => ({
+    title: 'Noble Positions', items: store.object?.entityPositionAssignmentsList ?? [], icon: "mdi-seal", subtitle: "The ruling elite, guiding the fate of realms and people"
+}));
+
+const otherBeforeLists: ComputedRef<LegendLinkListData[]> = computed(() => [
     { title: 'Related Factions and Groups', items: store.object?.entityEntityLinkList ?? [], icon: "mdi-account-group", subtitle: "The organizations and groups connected to this entity" },
     { title: 'Current Sites', items: store.object?.currentSiteList ?? [], icon: "mdi-home-outline", subtitle: "The sites held by this entity, from settlements to strongholds of power" },
     { title: 'Lost Sites', items: store.object?.lostSiteList ?? [], icon: "mdi-home-off-outline", subtitle: "Former strongholds and settlements once under the control of this entity" },
@@ -40,7 +47,29 @@ const afterLists: ComputedRef<LegendLinkListData[]> = computed(() => [
                     </template>
                 </ExpandableCard>
             </v-col>
-            <template v-for="(list, i) in beforeLists" :key="i">
+
+            <v-col v-if="warsList.items.length" cols="12" xl="4" lg="6" md="12">
+                <LegendsCardList :list="warsList" />
+            </v-col>
+
+            <v-col v-if="noblePositionsList.items.length" cols="12" xl="4" lg="6" md="12">
+                <LegendsCardList :list="noblePositionsList" />
+            </v-col>
+
+            <MonarchTimeline
+                v-if="store.object?.id != null"
+                :entityId="store.object.id"
+                :isCiv="Boolean(store.object.isCiv || store.object.type?.toLowerCase() === 'civilization')"
+                mode="primaryOnly"
+            />
+            <MonarchTimeline
+                v-if="store.object?.id != null"
+                :entityId="store.object.id"
+                :isCiv="Boolean(store.object.isCiv || store.object.type?.toLowerCase() === 'civilization')"
+                mode="otherPositions"
+            />
+
+            <template v-for="(list, i) in otherBeforeLists" :key="i">
                 <v-col v-if="list?.items.length" cols="12" xl="4" lg="6" md="12">
                     <LegendsCardList :list="list" />
                 </v-col>
