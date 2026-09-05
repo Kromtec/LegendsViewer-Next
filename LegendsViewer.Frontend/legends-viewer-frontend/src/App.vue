@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import { useBookmarkStore } from './stores/bookmarkStore';
 import { useVersionStore } from './stores/versionStore';
 import { useFavoriteStore } from './stores/favoriteStore';
+
+const router = useRouter();
+
+const handleGlobalClick = (event: MouseEvent) => {
+  const target = (event.target as HTMLElement)?.closest('a');
+  if (!target) return;
+  const href = target.getAttribute('href');
+  if (href && href.startsWith('/') && !target.hasAttribute('target') && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+    event.preventDefault();
+    router.push(href);
+  }
+};
 
 const versionStore = useVersionStore()
 versionStore.loadVersion()
@@ -61,7 +74,7 @@ const ritualItems = [
 </script>
 
 <template>
-  <v-responsive class="border rounded">
+  <v-responsive class="border rounded" @click="handleGlobalClick">
     <v-app>
       <v-app-bar>
         <div class="logo">

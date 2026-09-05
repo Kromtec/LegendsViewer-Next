@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useWorldStore } from '../stores/worldStore';
 import { useWorldMapStore } from '../stores/mapStore';
+import { useEventFilterStore } from '../stores/eventFilterStore';
 import DoughnutChart from '../components/DoughnutChart.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import CivilizationsCardList from '../components/CivilizationsCardList.vue';
+import EventTypeFilterList from '../components/filter/EventTypeFilterList.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData, LoadItemsOptions, TableHeader } from '../types/legends';
 import ExpandableCard from '../components/ExpandableCard.vue';
@@ -12,6 +14,7 @@ import BarChart from '../components/BarChart.vue';
 
 const store = useWorldStore()
 const mapStore = useWorldMapStore()
+const eventFilterStore = useEventFilterStore()
 
 store.loadWorld();
 store.loadEventChartData()
@@ -22,7 +25,6 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
     { title: 'Heroic Ties', items: store.world?.playerRelatedObjects ?? [], icon: "mdi-compass-outline", subtitle: "Discover the adventurers, factions, and locations tied to your journey" },
 ]);
 
-
 const loadEvents = async ({ page, itemsPerPage, sortBy }: LoadItemsOptions) => {
     await store.loadEvents(page, itemsPerPage, sortBy)
 }
@@ -30,6 +32,17 @@ const loadEvents = async ({ page, itemsPerPage, sortBy }: LoadItemsOptions) => {
 const loadEventCollections = async ({ page, itemsPerPage, sortBy }: LoadItemsOptions) => {
     await store.loadEventCollections(page, itemsPerPage, sortBy)
 }
+
+const reloadEventsAndCharts = async () => {
+    await store.loadEventChartData();
+    await store.loadEventTypeChartData();
+    await store.loadEvents(1, store.objectEventsPerPage, []);
+};
+
+const clearEventFilters = async () => {
+    eventFilterStore.clearFilters();
+    await reloadEventsAndCharts();
+};
 
 const eventTableHeaders: TableHeader[] = [
     { title: 'Date', key: 'date' },
@@ -131,6 +144,17 @@ const eventCollectionTableHeaders: TableHeader[] = [
                 icon="mdi-calendar-clock" :height="'auto'">
                 <template #compact-content>
                     <div class="ml-12">
+                        <v-chip
+                            v-if="eventFilterStore.isFiltered"
+                            color="warning"
+                            variant="tonal"
+                            closable
+                            class="mb-3"
+                            prepend-icon="mdi-filter-variant"
+                            @click:close="clearEventFilters"
+                        >
+                            Filtered: {{ eventFilterStore.excludedEventTypes.length }} event type(s) hidden (Click X to clear)
+                        </v-chip>
                         <LineChart v-if="store.objectEventChartData != null" :chart-data="store.objectEventChartData" />
                         <v-data-table-server v-model:items-per-page="store.objectEventsPerPage"
                             :headers="eventTableHeaders" :items="store.objectEvents"
@@ -143,8 +167,18 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     </div>
                 </template>
                 <template #expanded-content>
-                    <BarChart v-if="store.objectEventTypeChartData != null"
-                        :chart-data="store.objectEventTypeChartData" />
+                    <v-row>
+                        <v-col cols="12" lg="4" md="5">
+                            <EventTypeFilterList
+                                :chart-data="store.objectEventTypeChartData"
+                                @change="reloadEventsAndCharts"
+                            />
+                        </v-col>
+                        <v-col cols="12" lg="8" md="7">
+                            <BarChart v-if="store.objectEventTypeChartData != null"
+                                :chart-data="store.objectEventTypeChartData" />
+                        </v-col>
+                    </v-row>
                 </template>
             </ExpandableCard>
             <!-- <v-card title="Events" :subtitle="'A timeline of events for ' + store.world?.name" variant="text">

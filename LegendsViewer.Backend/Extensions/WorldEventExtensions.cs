@@ -1,4 +1,5 @@
-﻿using LegendsViewer.Backend.Legends.Events;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Legends.Events;
 
 namespace LegendsViewer.Backend.Extensions;
 
@@ -173,4 +174,15 @@ public static class WorldEventExtensions
         }
         return $"UNKNOWN EVENT ({eventType})";
     }
+
+    public static bool MatchesFilterCriteria(this WorldEvent worldEvent, EventFilterDto? filter)
+    {
+        if (filter == null || filter.ExcludedEventTypes == null || filter.ExcludedEventTypes.Count == 0)
+        {
+            return true;
+        }
+
+        return !filter.ExcludedEventTypes.Contains(worldEvent.Type, StringComparer.OrdinalIgnoreCase);
+    }
 }
+

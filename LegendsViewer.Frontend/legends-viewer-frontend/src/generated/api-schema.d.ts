@@ -14706,6 +14706,9 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
+        EventFilterDto: {
+            excludedEventTypes?: string[] | null;
+        };
         CreatureType: {
             type?: string | null;
             /** Format: int32 */
