@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 
 # Team
 .team/
+
+*.tsbuildinfo

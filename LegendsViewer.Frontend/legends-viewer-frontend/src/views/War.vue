@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useWarStore } from '../stores/worldObjectStores';
+import { useWarMapStore } from '../stores/mapStore';
 import WorldObjectPage from '../components/WorldObjectPage.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
@@ -9,6 +10,7 @@ import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData } from '../types/legends';
 
 const store = useWarStore()
+const mapStore = useWarMapStore()
 
 
 const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
@@ -20,7 +22,7 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
 </script>
 
 <template>
-    <WorldObjectPage :store="store" :object-type="'war'">
+    <WorldObjectPage :store="store" :mapStore="mapStore" :object-type="'war'">
         <template v-slot:type-specific-before-table>
             <v-col v-if="store.object?.battleGraphData != null" cols="12" xl="4" lg="6" md="12">
                 <ExpandableCard title="Battle Graph" subtitle="Scaled representation of faction roles in battle"
