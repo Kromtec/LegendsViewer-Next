@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Text;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Various;
@@ -176,7 +176,33 @@ public static class Formatting
 
     public static string FormatRace(string race)
     {
-        return race.Contains("FORGOTTEN") ? "Forgotten Beast" : InitCaps(race);
+        if (string.IsNullOrWhiteSpace(race))
+        {
+            return string.Empty;
+        }
+
+        if (race.Contains("FORGOTTEN", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Forgotten Beast";
+        }
+
+        if (race.StartsWith("HFEXP", StringComparison.OrdinalIgnoreCase))
+        {
+            if (race.Contains("E_HUM", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Human";
+            }
+            if (race.Contains("E_BEAST", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Beast";
+            }
+            if (race.Contains("E_FS", StringComparison.OrdinalIgnoreCase) || race.Contains("E_FL", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Local Defender";
+            }
+        }
+
+        return InitCaps(race);
     }
 
     public static string RemoveSpecialCharacters(string str)
