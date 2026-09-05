@@ -1,4 +1,6 @@
 using System.Text;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Events;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Parser;
@@ -207,6 +209,62 @@ public class Artifact : WorldObject, IHasCoordinates
     public override string GetIcon()
     {
         return Icon;
+    }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("IsHeld", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Holder != null || HolderId > -1))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("IsWrittenContent", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(WrittenContent != null || WrittenContentId > -1))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("IsLocatedInSite", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Site != null))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals(nameof(Type), StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("ArtifactType", StringComparison.InvariantCultureIgnoreCase)) &&
+                !string.IsNullOrWhiteSpace(rule.Value))
+            {
+                if (rule.Operator == FilterOperator.Equals &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            if (rule.PropertyName.Equals(nameof(PageCount), StringComparison.InvariantCultureIgnoreCase) &&
+                int.TryParse(rule.Value, out int pageCount) &&
+                rule.ViolatesIntegerCriteria(PageCount, pageCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
