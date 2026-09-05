@@ -2,6 +2,7 @@
 import { useStructureStore } from '../stores/worldObjectStores';
 import WorldObjectsPage from '../components/WorldObjectsPage.vue';
 import { TableHeader } from '../types/legends';
+import StructureFilter from '../components/filter/StructureFilter.vue';
 
 const store = useStructureStore();
 const icon = "mdi-home-silo";
@@ -21,6 +22,11 @@ const tableHeaders: TableHeader[] = [
 
 <template>
     <WorldObjectsPage :store="store" :icon="icon" :title="title" :subtitle="subtitle" :overviewTitle="overviewTitle"
-        :overviewSubtitle="overviewSubtitle" :wikiKeyWord="wikiKeyWord" :tableHeaders="tableHeaders">
+        :overviewSubtitle="overviewSubtitle" :wikiKeyWord="wikiKeyWord" :tableHeaders="tableHeaders"
+        :showFilters="true">
+        <template v-slot:type-specific-filter="{ filters }">
+            <StructureFilter :title="title" :filters="filters"
+                @update:filters="val => filters.splice(0, filters.length, ...val)" />
+        </template>
     </WorldObjectsPage>
 </template>
