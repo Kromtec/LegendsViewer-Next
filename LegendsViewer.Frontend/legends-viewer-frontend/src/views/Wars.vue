@@ -2,6 +2,7 @@
 import { useWarStore } from '../stores/worldObjectStores';
 import WorldObjectsPage from '../components/WorldObjectsPage.vue';
 import { TableHeader } from '../types/legends';
+import WarFilter from '../components/filter/WarFilter.vue';
 
 const store = useWarStore();
 const icon = "mdi-sword-cross";
@@ -23,6 +24,11 @@ const tableHeaders: TableHeader[] = [
 
 <template>
     <WorldObjectsPage :store="store" :icon="icon" :title="title" :subtitle="subtitle" :overviewTitle="overviewTitle"
-        :overviewSubtitle="overviewSubtitle" :wikiKeyWord="wikiKeyWord" :tableHeaders="tableHeaders">
+        :overviewSubtitle="overviewSubtitle" :wikiKeyWord="wikiKeyWord" :tableHeaders="tableHeaders"
+        :showFilters="true">
+        <template v-slot:type-specific-filter="{ filters }">
+            <WarFilter :title="title" :filters="filters"
+                @update:filters="val => filters.splice(0, filters.length, ...val)" />
+        </template>
     </WorldObjectsPage>
 </template>

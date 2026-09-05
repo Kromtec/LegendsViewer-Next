@@ -4,21 +4,7 @@
         <ThreeStateBoolFilter label="Has Sites" v-model="localRules.HasCurrentSites" />
         <ThreeStateBoolFilter label="Worships Deity" v-model="localRules.WorshipsDeity" />
         
-        <v-list-item class="mt-1 mb-1">
-            <div style="float: left; margin-top: 8px;">Type</div>
-            <div style="float: right;">
-                <v-select
-                    density="compact"
-                    hide-details
-                    label=""
-                    :items="entityTypeOptions"
-                    item-title="title"
-                    item-value="value"
-                    v-model="localRules.EntityType"
-                    width="220"
-                ></v-select>
-            </div>
-        </v-list-item>
+        <SelectFilter label="Type" :items="entityTypeOptions" v-model="localRules.EntityType" />
 
         <v-divider class="mt-3 mb-3"/>
 
@@ -40,10 +26,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
 import NumberFilter from './controls/NumberFilter.vue';
+import SelectFilter from './controls/SelectFilter.vue';
 import {
   existsRule,
   findRuleValue,
@@ -54,6 +41,7 @@ import {
   updateBoolRule,
   updateNumberRule
 } from '../../utils/filterRuleHelpers';
+import { useFilterRules } from '../../composables/useFilterRules';
 
 const props = defineProps<{
     title: string;
@@ -88,12 +76,10 @@ const localRules = ref({
     WarCountValue: null as number | null,
 });
 
-let isUpdatingFromProps = false;
-
-watch(() => props.filters, (filters) => {
-    if (!filters) return;
-    isUpdatingFromProps = true;
-
+useFilterRules(
+  props,
+  localRules,
+  (filters) => {
     localRules.value.IsCiv = findRuleValue(filters, "IsCiv");
     localRules.value.HasCurrentSites = findRuleValue(filters, "HasCurrentSites");
     localRules.value.WorshipsDeity = findRuleValue(filters, "WorshipsDeity");
@@ -106,28 +92,20 @@ watch(() => props.filters, (filters) => {
     localRules.value.WarCountActive = existsRule(filters, "WarCount");
     localRules.value.WarCountOperator = findRuleOperator(filters, "WarCount");
     localRules.value.WarCountValue = findRuleNumberValue(filters, "WarCount");
-
-    isUpdatingFromProps = false;
-}, { immediate: true, deep: true });
-
-watch(localRules, () => {
-    if (isUpdatingFromProps || !props.filters) return;
-    const filters = props.filters;
-
-    // Boolean rules
+  },
+  (filters) => {
     updateBoolRule(filters, localRules.value.IsCiv, "IsCiv");
     updateBoolRule(filters, localRules.value.HasCurrentSites, "HasCurrentSites");
     updateBoolRule(filters, localRules.value.WorshipsDeity, "WorshipsDeity");
 
-    // EntityType rule
     if (!localRules.value.EntityType) {
         removeRule(filters, "EntityType");
     } else {
         setRule(filters, "EntityType", "Equals", localRules.value.EntityType);
     }
 
-    // Number rules
     updateNumberRule(filters, localRules.value.CurrentSitesCountActive, localRules.value.CurrentSitesCountOperator, localRules.value.CurrentSitesCountValue, "CurrentSitesCount");
     updateNumberRule(filters, localRules.value.WarCountActive, localRules.value.WarCountOperator, localRules.value.WarCountValue, "WarCount");
-}, { deep: true });
+  }
+);
 </script>

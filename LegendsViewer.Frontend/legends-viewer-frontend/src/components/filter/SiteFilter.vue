@@ -3,21 +3,7 @@
         <ThreeStateBoolFilter label="Occupied" v-model="localRules.IsOccupied" />
         <ThreeStateBoolFilter label="Has Structures" v-model="localRules.HasStructures" />
         
-        <v-list-item class="mt-1 mb-1">
-            <div style="float: left; margin-top: 8px;">Site Type</div>
-            <div style="float: right;">
-                <v-select
-                    density="compact"
-                    hide-details
-                    label=""
-                    :items="siteTypeOptions"
-                    item-title="title"
-                    item-value="value"
-                    v-model="localRules.SiteType"
-                    width="220"
-                ></v-select>
-            </div>
-        </v-list-item>
+        <SelectFilter label="Site Type" :items="siteTypeOptions" v-model="localRules.SiteType" />
 
         <v-divider class="mt-3 mb-3"/>
 
@@ -39,10 +25,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
 import NumberFilter from './controls/NumberFilter.vue';
+import SelectFilter from './controls/SelectFilter.vue';
 import {
   existsRule,
   findRuleValue,
@@ -53,6 +40,7 @@ import {
   updateBoolRule,
   updateNumberRule
 } from '../../utils/filterRuleHelpers';
+import { useFilterRules } from '../../composables/useFilterRules';
 
 const props = defineProps<{
     title: string;
@@ -94,12 +82,10 @@ const localRules = ref({
     BattleCountValue: null as number | null,
 });
 
-let isUpdatingFromProps = false;
-
-watch(() => props.filters, (filters) => {
-    if (!filters) return;
-    isUpdatingFromProps = true;
-
+useFilterRules(
+  props,
+  localRules,
+  (filters) => {
     localRules.value.IsOccupied = findRuleValue(filters, "IsOccupied");
     localRules.value.HasStructures = findRuleValue(filters, "HasStructures");
     localRules.value.SiteType = findRuleValue(filters, "SiteType");
@@ -111,27 +97,19 @@ watch(() => props.filters, (filters) => {
     localRules.value.BattleCountActive = existsRule(filters, "BattleCount");
     localRules.value.BattleCountOperator = findRuleOperator(filters, "BattleCount");
     localRules.value.BattleCountValue = findRuleNumberValue(filters, "BattleCount");
-
-    isUpdatingFromProps = false;
-}, { immediate: true, deep: true });
-
-watch(localRules, () => {
-    if (isUpdatingFromProps || !props.filters) return;
-    const filters = props.filters;
-
-    // Boolean rules
+  },
+  (filters) => {
     updateBoolRule(filters, localRules.value.IsOccupied, "IsOccupied");
     updateBoolRule(filters, localRules.value.HasStructures, "HasStructures");
 
-    // SiteType rule
     if (!localRules.value.SiteType) {
         removeRule(filters, "SiteType");
     } else {
         setRule(filters, "SiteType", "Equals", localRules.value.SiteType);
     }
 
-    // Number rules
     updateNumberRule(filters, localRules.value.StructureCountActive, localRules.value.StructureCountOperator, localRules.value.StructureCountValue, "StructureCount");
     updateNumberRule(filters, localRules.value.BattleCountActive, localRules.value.BattleCountOperator, localRules.value.BattleCountValue, "BattleCount");
-}, { deep: true });
+  }
+);
 </script>

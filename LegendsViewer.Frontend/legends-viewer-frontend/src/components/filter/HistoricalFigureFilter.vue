@@ -2,9 +2,9 @@
     <v-list style="background-color: rgb(var(--v-theme-background));">
         <ThreeStateBoolFilter label="Alive" v-model="localRules.Alive" />
         <ThreeStateBoolFilter label="Deity" v-model="localRules.Deity" />
-        <v-list-item>
-            <div style="float: left; margin-top: 5px;">Special</div>
-            <v-btn-toggle style="float: right;" density="compact" v-model="localRules.Special" divided>
+        <div class="d-flex align-center justify-space-between px-4 py-2" style="width: 100%;">
+            <div class="text-body-2 pr-2">Special</div>
+            <v-btn-toggle density="compact" v-model="localRules.Special" divided class="flex-shrink-0">
                 <v-btn value="vampire" size="small">
                     <img :src="vampireImageData" width="24" height="24" />
                 </v-btn>
@@ -15,7 +15,7 @@
                     <img :src="necromancerImageData" width="24" height="24" />
                 </v-btn>
             </v-btn-toggle>
-        </v-list-item>
+        </div>
         <v-divider class="mt-3 mb-3"/>
         <NumberFilter
             label="Age"
@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { vampireImageData, werebeastImageData, necromancerImageData } from '../FamilyTree.vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
@@ -57,6 +57,7 @@ import {
   updateBoolRule,
   updateNumberRule
 } from '../../utils/filterRuleHelpers';
+import { useFilterRules } from '../../composables/useFilterRules';
 
 // Accept an array of filter rules as a prop
 const props = defineProps<{
@@ -80,12 +81,10 @@ const localRules = ref({
     DiedValue: null as number | null
 });
 
-let isUpdatingFromProps = false;
-
-watch(() => props.filters, (filters) => {
-    if (!filters) return;
-    isUpdatingFromProps = true;
-
+useFilterRules(
+  props,
+  localRules,
+  (filters) => {
     localRules.value.Alive = findRuleValue(filters, "IsAlive");
     localRules.value.Deity = findRuleValue(filters, "IsDeity");
 
@@ -107,14 +106,8 @@ watch(() => props.filters, (filters) => {
     localRules.value.DiedRuleActive = existsRule(filters, "DeathYear");
     localRules.value.DiedOperator = findRuleOperator(filters, "DeathYear");
     localRules.value.DiedValue = findRuleNumberValue(filters, "DeathYear");
-
-    isUpdatingFromProps = false;
-}, { immediate: true, deep: true });
-
-watch(localRules, () => {
-    if (isUpdatingFromProps || !props.filters) return;
-    const filters = props.filters;
-
+  },
+  (filters) => {
     // ALIVE and DEITY filter logic
     updateBoolRule(filters, localRules.value.Alive, "IsAlive");
     updateBoolRule(filters, localRules.value.Deity, "IsDeity");
@@ -139,6 +132,6 @@ watch(localRules, () => {
             setRule(filters, "IsNecromancer", "Equals", "true");
             break;
     }
-}, { deep: true });
-
+  }
+);
 </script>

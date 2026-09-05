@@ -4,21 +4,7 @@
         <ThreeStateBoolFilter label="Is Written Content" v-model="localRules.IsWrittenContent" />
         <ThreeStateBoolFilter label="Located in Site" v-model="localRules.IsLocatedInSite" />
 
-        <v-list-item class="mt-1 mb-1">
-            <div style="float: left; margin-top: 8px;">Artifact Type</div>
-            <div style="float: right;">
-                <v-select
-                    density="compact"
-                    hide-details
-                    label=""
-                    :items="artifactTypeOptions"
-                    item-title="title"
-                    item-value="value"
-                    v-model="localRules.Type"
-                    width="220"
-                ></v-select>
-            </div>
-        </v-list-item>
+        <SelectFilter label="Artifact Type" :items="artifactTypeOptions" v-model="localRules.Type" />
 
         <v-divider class="mt-3 mb-3"/>
 
@@ -33,10 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
 import NumberFilter from './controls/NumberFilter.vue';
+import SelectFilter from './controls/SelectFilter.vue';
 import {
   existsRule,
   findRuleValue,
@@ -47,6 +34,8 @@ import {
   updateBoolRule,
   updateNumberRule
 } from '../../utils/filterRuleHelpers';
+
+import { useFilterRules } from '../../composables/useFilterRules';
 
 const props = defineProps<{
     title: string;
@@ -86,12 +75,10 @@ const localRules = ref({
     PageCountValue: null as number | null,
 });
 
-let isUpdatingFromProps = false;
-
-watch(() => props.filters, (filters) => {
-    if (!filters) return;
-    isUpdatingFromProps = true;
-
+useFilterRules(
+  props,
+  localRules,
+  (filters) => {
     localRules.value.IsHeld = findRuleValue(filters, "IsHeld");
     localRules.value.IsWrittenContent = findRuleValue(filters, "IsWrittenContent");
     localRules.value.IsLocatedInSite = findRuleValue(filters, "IsLocatedInSite");
@@ -100,20 +87,12 @@ watch(() => props.filters, (filters) => {
     localRules.value.PageCountActive = existsRule(filters, "PageCount");
     localRules.value.PageCountOperator = findRuleOperator(filters, "PageCount");
     localRules.value.PageCountValue = findRuleNumberValue(filters, "PageCount");
-
-    isUpdatingFromProps = false;
-}, { immediate: true, deep: true });
-
-watch(localRules, () => {
-    if (isUpdatingFromProps || !props.filters) return;
-    const filters = props.filters;
-
-    // Boolean rules
+  },
+  (filters) => {
     updateBoolRule(filters, localRules.value.IsHeld, "IsHeld");
     updateBoolRule(filters, localRules.value.IsWrittenContent, "IsWrittenContent");
     updateBoolRule(filters, localRules.value.IsLocatedInSite, "IsLocatedInSite");
 
-    // Type rule
     if (!localRules.value.Type) {
         removeRule(filters, "Type");
         removeRule(filters, "ArtifactType");
@@ -122,7 +101,7 @@ watch(localRules, () => {
         setRule(filters, "Type", "Equals", localRules.value.Type);
     }
 
-    // Number rule
     updateNumberRule(filters, localRules.value.PageCountActive, localRules.value.PageCountOperator, localRules.value.PageCountValue, "PageCount");
-}, { deep: true });
+  }
+);
 </script>

@@ -1,36 +1,7 @@
 <template>
     <v-list style="background-color: rgb(var(--v-theme-background));">
-        <v-list-item class="mt-1 mb-1">
-            <div style="float: left; margin-top: 8px;">Biome</div>
-            <div style="float: right;">
-                <v-select
-                    density="compact"
-                    hide-details
-                    label=""
-                    :items="biomeOptions"
-                    item-title="title"
-                    item-value="value"
-                    v-model="localRules.Biome"
-                    width="220"
-                ></v-select>
-            </div>
-        </v-list-item>
-
-        <v-list-item class="mt-1 mb-1">
-            <div style="float: left; margin-top: 8px;">Evilness</div>
-            <div style="float: right;">
-                <v-select
-                    density="compact"
-                    hide-details
-                    label=""
-                    :items="evilnessOptions"
-                    item-title="title"
-                    item-value="value"
-                    v-model="localRules.Evilness"
-                    width="220"
-                ></v-select>
-            </div>
-        </v-list-item>
+        <SelectFilter label="Biome" :items="biomeOptions" v-model="localRules.Biome" />
+        <SelectFilter label="Evilness" :items="evilnessOptions" v-model="localRules.Evilness" />
 
         <v-divider class="mt-3 mb-3"/>
 
@@ -64,10 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { FilterOperator, FilterRuleDto } from '../../stores/worldObjectStores';
 import ThreeStateBoolFilter from './controls/ThreeStateBoolFilter.vue';
 import NumberFilter from './controls/NumberFilter.vue';
+import SelectFilter from './controls/SelectFilter.vue';
 import {
   existsRule,
   findRuleValue,
@@ -78,6 +50,7 @@ import {
   updateBoolRule,
   updateNumberRule
 } from '../../utils/filterRuleHelpers';
+import { useFilterRules } from '../../composables/useFilterRules';
 
 const props = defineProps<{
     title: string;
@@ -121,12 +94,10 @@ const localRules = ref({
     BattleCountValue: null as number | null,
 });
 
-let isUpdatingFromProps = false;
-
-watch(() => props.filters, (filters) => {
-    if (!filters) return;
-    isUpdatingFromProps = true;
-
+useFilterRules(
+  props,
+  localRules,
+  (filters) => {
     localRules.value.Biome = findRuleValue(filters, "Biome") || findRuleValue(filters, "RegionType");
     localRules.value.Evilness = findRuleValue(filters, "Evilness");
     localRules.value.HasSites = findRuleValue(filters, "HasSites");
@@ -143,15 +114,8 @@ watch(() => props.filters, (filters) => {
     localRules.value.BattleCountActive = existsRule(filters, "BattleCount");
     localRules.value.BattleCountOperator = findRuleOperator(filters, "BattleCount");
     localRules.value.BattleCountValue = findRuleNumberValue(filters, "BattleCount");
-
-    isUpdatingFromProps = false;
-}, { immediate: true, deep: true });
-
-watch(localRules, () => {
-    if (isUpdatingFromProps || !props.filters) return;
-    const filters = props.filters;
-
-    // Biome rule
+  },
+  (filters) => {
     if (!localRules.value.Biome) {
         removeRule(filters, "Biome");
         removeRule(filters, "RegionType");
@@ -160,20 +124,18 @@ watch(localRules, () => {
         setRule(filters, "Biome", "Equals", localRules.value.Biome);
     }
 
-    // Evilness rule
     if (!localRules.value.Evilness) {
         removeRule(filters, "Evilness");
     } else {
         setRule(filters, "Evilness", "Equals", localRules.value.Evilness);
     }
 
-    // Boolean rules
     updateBoolRule(filters, localRules.value.HasSites, "HasSites");
     updateBoolRule(filters, localRules.value.HasForce, "HasForce");
 
-    // Number rules
     updateNumberRule(filters, localRules.value.SquareTilesActive, localRules.value.SquareTilesOperator, localRules.value.SquareTilesValue, "SquareTiles");
     updateNumberRule(filters, localRules.value.SiteCountActive, localRules.value.SiteCountOperator, localRules.value.SiteCountValue, "SiteCount");
     updateNumberRule(filters, localRules.value.BattleCountActive, localRules.value.BattleCountOperator, localRules.value.BattleCountValue, "BattleCount");
-}, { deep: true });
+  }
+);
 </script>
