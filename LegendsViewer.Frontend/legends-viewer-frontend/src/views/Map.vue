@@ -294,6 +294,11 @@ export default defineComponent({
           maxZoom: 2
         });
         leafletMap.value.on('zoomend', syncSiteCountLayer);
+
+        // Custom pane for pulse highlight circles placed in background below markers (zIndex 350)
+        const highlightPane = leafletMap.value.createPane('highlightPane');
+        highlightPane.style.zIndex = '350';
+        highlightPane.style.pointerEvents = 'none';
       }
       await worldStore.loadWorld();
       await mapStore.loadWorldMap('Large');
@@ -323,11 +328,13 @@ export default defineComponent({
       const addPulseCircle = (x: number, y: number, radius = 18) => {
         const latlng = toLatLng(x, y);
         const circle = L.circle(latlng, {
+          pane: 'highlightPane',
           color: '#ffcc00',
           fillColor: '#ff3300',
           fillOpacity: 0.4,
           radius: radius,
           weight: 4,
+          interactive: false,
           className: 'target-highlight-pulse',
         });
         highlightLayer.value?.addLayer(circle);
@@ -407,11 +414,13 @@ export default defineComponent({
       const addPulseCircle = (x: number, y: number, radius = 18) => {
         const latlng = toLatLng(x, y);
         const circle = L.circle(latlng, {
+          pane: 'highlightPane',
           color: '#ffcc00',
           fillColor: '#ff3300',
           fillOpacity: 0.4,
           radius: radius,
           weight: 4,
+          interactive: false,
           className: 'target-highlight-pulse',
         });
         highlightLayer.value?.addLayer(circle);
