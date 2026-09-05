@@ -115,7 +115,7 @@ const ritualItems = [
             </template>
           </v-list-group>
 
-          <v-list-item prepend-icon="mdi-earth-box" title="World" to="/world" :active-class="'v-list-item--active'"
+          <v-list-item prepend-icon="mdi-earth-box" title="Overview" to="/world" :active-class="'v-list-item--active'"
             :disabled="bookmarkStore?.isLoaded == false" />
           <v-list-item prepend-icon="mdi-trophy-outline" title="World Records" to="/records" :active-class="'v-list-item--active'"
             :disabled="bookmarkStore?.isLoaded == false" />
