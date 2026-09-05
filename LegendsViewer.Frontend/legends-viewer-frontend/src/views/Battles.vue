@@ -2,6 +2,7 @@
 import { useBattleStore } from '../stores/worldObjectStores';
 import WorldObjectsPage from '../components/WorldObjectsPage.vue';
 import { TableHeader } from '../types/legends';
+import BattleFilter from '../components/filter/BattleFilter.vue';
 
 const store = useBattleStore();
 const icon = "mdi-chess-bishop";
@@ -22,6 +23,10 @@ const tableHeaders: TableHeader[] = [
 
 <template>
     <WorldObjectsPage :store="store" :icon="icon" :title="title" :subtitle="subtitle" :overviewTitle="overviewTitle"
-        :overviewSubtitle="overviewSubtitle" :tableHeaders="tableHeaders">
+        :overviewSubtitle="overviewSubtitle" :tableHeaders="tableHeaders" :showFilters="true">
+        <template v-slot:type-specific-filter="{ filters }">
+            <BattleFilter :title="title" :filters="filters"
+                @update:filters="val => filters.splice(0, filters.length, ...val)" />
+        </template>
     </WorldObjectsPage>
 </template>
