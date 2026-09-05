@@ -1,4 +1,6 @@
-﻿using LegendsViewer.Backend.Legends;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Legends;
+using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Maps;
 using LegendsViewer.Backend.Legends.WorldObjects;
@@ -12,6 +14,48 @@ public class WorldMapController(IWorld worldDataService, IWorldMapImageGenerator
 {
     private readonly IWorld _worldDataService = worldDataService;
     private readonly IWorldMapImageGenerator _worldMapImageGenerator = worldMapImageGenerator;
+
+    [HttpGet("coordinates/{type}/{id}")]
+    public ActionResult<MapCoordinatesDto?> GetObjectCoordinates(string type, int id)
+    {
+        WorldObject? obj = type.ToLower() switch
+        {
+            "site" => _worldDataService.GetSite(id),
+            "entity" => _worldDataService.GetEntity(id),
+            "region" => _worldDataService.GetRegion(id),
+            "undergroundregion" => _worldDataService.GetUndergroundRegion(id),
+            "landmass" => _worldDataService.GetLandmass(id),
+            "river" => _worldDataService.GetRiver(id),
+            "construction" => _worldDataService.GetWorldConstruction(id),
+            "mountainpeak" => _worldDataService.GetMountainPeak(id),
+            "structure" => _worldDataService.GetStructure(id),
+            "artifact" => _worldDataService.GetArtifact(id),
+            _ => null
+        };
+
+        if (obj is not IHasCoordinates item)
+        {
+            return NotFound();
+        }
+
+        var dto = new MapCoordinatesDto
+        {
+            CenterX = item.CenterX(),
+            CenterY = item.CenterY(),
+            MinX = item.MinX(),
+            MaxX = item.MaxX(),
+            MinY = item.MinY(),
+            MaxY = item.MaxY(),
+            Coordinates = item.Coordinates.Select(c => new LocationDto(c.X, c.Y)).ToList()
+        };
+
+        if (obj is Entity entity && entity.CurrentSites != null)
+        {
+            dto.SiteIds = entity.CurrentSites.Select(s => s.Id).ToList();
+        }
+
+        return dto;
+    }
 
     [HttpGet("world/{size}")]
     public ActionResult<byte[]?> GetWorldMap(MapSize size = MapSize.Default)

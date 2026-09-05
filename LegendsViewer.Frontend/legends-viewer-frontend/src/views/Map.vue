@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, watch, ref, onBeforeUnmount } from 'vue';
-import { useRouter, type Router } from 'vue-router';
+import { useRouter, useRoute, type Router } from 'vue-router';
 import { useWorldStore } from '../stores/worldStore';
 import { useWorldMapStore } from '../stores/mapStore';
 import L, { Map as LeafletMap, ImageOverlay, Layer, LayerGroup } from 'leaflet';
@@ -260,9 +260,12 @@ export default defineComponent({
     const worldStore = useWorldStore();
     const mapStore = useWorldMapStore();
     const router = useRouter();
+    const route = useRoute();
     const leafletMap = ref<LeafletMap>();
     const currentOverlay = ref<ImageOverlay | null>(null);
     const siteCountLayer = ref<LayerGroup | null>(null);
+    const highlightLayer = ref<LayerGroup | null>(null);
+    const siteMarkersMap = new Map<number, { marker: L.Layer; popup: HTMLElement }>();
 
     // This will hold the LayerGroups for different owners
     const ownerLayers: Record<string, LayerGroup> = {};
@@ -301,6 +304,151 @@ export default defineComponent({
       addCustomControl(leafletMap.value, ownerLayers);
     };
 
+    const toLatLng = (x: number, y: number): L.LatLngTuple => {
+      const scale = 8;
+      const height = worldStore.world.height ?? 0;
+      return [(height - y) * scale - 0.5 * scale, x * scale + 0.5 * scale];
+    };
+
+    const handleObjectFocus = async (type: string, id: number) => {
+      if (!leafletMap.value) return;
+
+      if (highlightLayer.value) {
+        leafletMap.value.removeLayer(highlightLayer.value as unknown as Layer);
+      }
+      highlightLayer.value = new L.LayerGroup().addTo(leafletMap.value);
+
+      const siteMarkers = worldStore.world.siteMarkers ?? [];
+
+      const addPulseCircle = (x: number, y: number, radius = 18) => {
+        const latlng = toLatLng(x, y);
+        const circle = L.circle(latlng, {
+          color: '#ffcc00',
+          fillColor: '#ff3300',
+          fillOpacity: 0.4,
+          radius: radius,
+          weight: 4,
+          className: 'target-highlight-pulse',
+        });
+        highlightLayer.value?.addLayer(circle);
+      };
+
+      const lowerType = type.toLowerCase();
+
+      // 1. SITE
+      if (lowerType === 'site') {
+        const site = siteMarkers.find(s => s.id === id);
+        if (site && site.coordinates?.length) {
+          const { x, y } = site.coordinates[0];
+          if (x != null && y != null) {
+            const latlng = toLatLng(x, y);
+            leafletMap.value.setView(latlng, 1);
+            addPulseCircle(x, y, 16);
+
+            const siteEntry = siteMarkersMap.get(id);
+            if (siteEntry) {
+              siteEntry.marker.openPopup();
+            }
+            return;
+          }
+        }
+        await fetchAndFocusCoordinates(type, id);
+      }
+      // 2. ENTITY (Civilization / Faction / Group owning sites)
+      else if (lowerType === 'entity') {
+        // Find sites owned by entity ID (using ownerId or currentOwnerId)
+        // @ts-ignore
+        const matchingSites = siteMarkers.filter(s => s.ownerId === id || s.currentOwnerId === id);
+
+        if (matchingSites.length > 0) {
+          const points: L.LatLngTuple[] = [];
+
+          // Make sure matching owner layers are active on the map
+          for (const site of matchingSites) {
+            const ownerText = site.ownerText ?? 'Unknown';
+            if (ownerLayers[ownerText] && !leafletMap.value.hasLayer(ownerLayers[ownerText])) {
+              leafletMap.value.addLayer(ownerLayers[ownerText]);
+            }
+
+            site.coordinates?.forEach(coord => {
+              if (coord.x != null && coord.y != null) {
+                points.push(toLatLng(coord.x, coord.y));
+                addPulseCircle(coord.x, coord.y, 16);
+              }
+            });
+          }
+
+          if (points.length === 1) {
+            leafletMap.value.setView(points[0], 1);
+            const firstSite = matchingSites[0];
+            const siteEntry = firstSite.id ? siteMarkersMap.get(firstSite.id) : undefined;
+            if (siteEntry) {
+              siteEntry.marker.openPopup();
+            }
+          } else if (points.length > 1) {
+            const bounds = L.latLngBounds(points);
+            leafletMap.value.fitBounds(bounds, { padding: [80, 80] });
+          }
+        } else {
+          // Entity has no current sites in siteMarkers list -> fetch center/coords from API
+          await fetchAndFocusCoordinates(type, id);
+        }
+      }
+      // 3. OTHER OBJECT TYPES (Region, Landmass, River, Construction, Structure, MountainPeak, Artifact, etc.)
+      else {
+        await fetchAndFocusCoordinates(type, id);
+      }
+    };
+
+    const fetchAndFocusCoordinates = async (type: string, id: number) => {
+      if (!leafletMap.value) return;
+
+      const scale = 8;
+      const addPulseCircle = (x: number, y: number, radius = 18) => {
+        const latlng = toLatLng(x, y);
+        const circle = L.circle(latlng, {
+          color: '#ffcc00',
+          fillColor: '#ff3300',
+          fillOpacity: 0.4,
+          radius: radius,
+          weight: 4,
+          className: 'target-highlight-pulse',
+        });
+        highlightLayer.value?.addLayer(circle);
+      };
+
+      try {
+        const response = await fetch(`http://localhost:15421/api/WorldMap/coordinates/${type}/${id}`);
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (data) {
+          const { minX, maxX, minY, maxY, centerX, centerY } = data;
+          if (minX != null && maxX != null && minY != null && maxY != null) {
+            if (minX === maxX && minY === maxY) {
+              const latlng = toLatLng(centerX, centerY);
+              leafletMap.value.setView(latlng, 1);
+            } else {
+              const southWest = toLatLng(minX, maxY);
+              const northEast = toLatLng(maxX, minY);
+              const bounds = L.latLngBounds(southWest, northEast);
+              leafletMap.value.fitBounds(bounds, { padding: [80, 80] });
+            }
+          } else if (centerX != null && centerY != null) {
+            const latlng = toLatLng(centerX, centerY);
+            leafletMap.value.setView(latlng, 1);
+          }
+
+          if (centerX != null && centerY != null) {
+            const radius = (maxX != null && minX != null) ? Math.max(16, (maxX - minX + 1) * scale * 0.6) : 18;
+            addPulseCircle(centerX, centerY, isNaN(radius) ? 18 : radius);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch object coordinates for map focus:', err);
+      }
+    };
+
     const loadImageToMap = (base64Image: string) => {
       if (!leafletMap.value) return;
 
@@ -311,6 +459,7 @@ export default defineComponent({
         leafletMap.value.removeLayer(siteCountLayer.value as unknown as Layer);
         siteCountLayer.value = null;
       }
+      siteMarkersMap.clear();
 
       const scale = 8;
       const width = (worldStore.world.width ?? 0);
@@ -345,11 +494,16 @@ export default defineComponent({
                 );
 
                 const sitesAtCoordinate = sitesByCoordinate.get(coordinateKey(coordinate.x, coordinate.y)) ?? [];
+                const popupContent = createSitePopup(sitesAtCoordinate, router);
                 marker.bindPopup(
-                  createSitePopup(sitesAtCoordinate, router),
+                  popupContent,
                   sitesAtCoordinate.length > 1 ? { minWidth: 220 } : undefined
                 );
                 ownerLayers[ownerText].addLayer(marker); // Add the marker to the owner's layer
+
+                if (siteMarker.id != null) {
+                  siteMarkersMap.set(siteMarker.id, { marker, popup: popupContent });
+                }
               }
             }
           }
@@ -388,12 +542,30 @@ export default defineComponent({
         syncSiteCountLayer();
       }
 
-      leafletMap.value.fitBounds(bounds);
+      // Check if target object is specified in route query params
+      const queryType = route.query.type as string | undefined;
+      const queryId = route.query.id ? parseInt(route.query.id as string, 10) : undefined;
+
+      if (queryType && queryId && !isNaN(queryId)) {
+        void handleObjectFocus(queryType, queryId);
+      } else {
+        leafletMap.value.fitBounds(bounds);
+      }
     };
 
     watch(() => mapStore.worldMapMax, (newBase64Map) => {
       if (newBase64Map) {
         loadImageToMap(newBase64Map);
+      }
+    });
+
+    watch(() => [route.query.type, route.query.id], ([newType, newId]) => {
+      if (newType && newId) {
+        const typeStr = newType as string;
+        const idNum = parseInt(newId as string, 10);
+        if (!isNaN(idNum)) {
+          void handleObjectFocus(typeStr, idNum);
+        }
       }
     });
 
@@ -427,8 +599,6 @@ export default defineComponent({
   background: rgb(var(--v-theme-background));
   color: rgb(var(--v-theme-foreground));
 }
-
-
 
 .leaflet-layer,
 .leaflet-control-zoom-in,
@@ -474,4 +644,27 @@ export default defineComponent({
   font-weight: 600;
   line-height: 1;
 }
+
+@keyframes map-target-pulse {
+  0% {
+    stroke-width: 3px;
+    stroke-opacity: 1;
+    fill-opacity: 0.5;
+  }
+  50% {
+    stroke-width: 7px;
+    stroke-opacity: 0.7;
+    fill-opacity: 0.2;
+  }
+  100% {
+    stroke-width: 3px;
+    stroke-opacity: 1;
+    fill-opacity: 0.5;
+  }
+}
+
+.target-highlight-pulse {
+  animation: map-target-pulse 1.5s infinite ease-in-out;
+}
 </style>
+

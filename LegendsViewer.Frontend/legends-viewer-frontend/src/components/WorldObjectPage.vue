@@ -42,7 +42,7 @@
         <v-col v-if="mapStore?.currentWorldObjectMap" cols="12" xl="4" lg="6" md="12">
             <!-- Location on World Map -->
             <v-card title="Location" :subtitle="'The location of ' + store.object?.name + ' on the world map'"
-                height="400" variant="text" to="/map">
+                height="400" variant="text" :to="{ path: '/map', query: { type: objectType, id: store.object?.id } }">
                 <template v-slot:prepend>
                     <v-icon class="mr-2" icon="mdi-map-search-outline" size="32px"></v-icon>
                 </template>
