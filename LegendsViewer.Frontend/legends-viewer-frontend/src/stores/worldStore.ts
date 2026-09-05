@@ -4,6 +4,8 @@ import { components } from '../generated/api-schema'; // Import from the OpenAPI
 import { LoadItemsSortOption } from '../types/legends';
 import { useEventFilterStore } from './eventFilterStore';
 
+import { useWorldRecordsStore } from './worldRecordsStore';
+
 export type WorldDto = components['schemas']['WorldDto'];
 // Common types
 type WorldObjectDto = components['schemas']['WorldObjectDto'];
@@ -40,6 +42,9 @@ export const useWorldStore = defineStore('world', {
                 this.isLoading = false;
                 console.error(error);
             } else if (data) {
+                if (this.world && (this.world.name !== data.name || this.world.alternativeName !== data.alternativeName)) {
+                    useWorldRecordsStore().clearRecords();
+                }
                 this.world = data;
                 this.isLoading = false;
             }

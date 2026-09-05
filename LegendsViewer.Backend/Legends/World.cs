@@ -1,7 +1,8 @@
-﻿using System.Data;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.EventCollections;
@@ -90,6 +91,13 @@ public class World : IDisposable, IWorld
 
     public StringBuilder Log { get; } = new StringBuilder();
     public ParsingErrors ParsingErrors { get; } = new ParsingErrors();
+
+    private WorldRecordsDto? _cachedWorldRecords;
+
+    public WorldRecordsDto GetOrComputeWorldRecords()
+    {
+        return _cachedWorldRecords ??= WorldRecordsCalculator.Calculate(this);
+    }
 
 
     private readonly List<HistoricalFigure> _hFtoHfLinkHFs = [];
@@ -762,5 +770,6 @@ public class World : IDisposable, IWorld
         MainRaces.Clear();
         Log.Clear();
         ParsingErrors.Clear();
+        _cachedWorldRecords = null;
     }
 }

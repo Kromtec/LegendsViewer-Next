@@ -1,7 +1,9 @@
 using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Extensions;
+using LegendsViewer.Backend.Legends;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Maps;
+using LegendsViewer.Backend.Legends.Various;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LegendsViewer.Backend.Controllers;
@@ -172,4 +174,16 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         response.Datasets.Add(dataset);
         return Ok(response);
     }
+
+    [HttpGet("records")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<WorldRecordsDto> GetWorldRecords()
+    {
+        if (_worldDataService is World world)
+        {
+            return Ok(WorldRecordsCalculator.Calculate(world));
+        }
+        return Ok(new WorldRecordsDto());
+    }
 }
+
