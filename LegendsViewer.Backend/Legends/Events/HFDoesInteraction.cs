@@ -51,7 +51,7 @@ public class HfDoesInteraction : WorldEvent
                     Target.LineageCurseParent = Doer;
                 }
 
-                if (Interaction.Contains("VAMPIRE"))
+                if (Interaction.Contains("VAMPIRE") || Interaction.Contains("DEITY_MAJOR_CURSE"))
                 {
                     creatureType = "vampire";
                 }
