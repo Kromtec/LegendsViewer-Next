@@ -31,7 +31,13 @@ public class ArtifactCreated : WorldEvent
                 case "creator_hfid":
                     HistoricalFigure = world.GetHistoricalFigure(Convert.ToInt32(property.Value));
                     break;
-                case "entity_id": Entity = world.GetEntity(Convert.ToInt32(property.Value)); break;
+                case "entity":
+                case "entity_id":
+                    if (property.Value != "-1")
+                    {
+                        Entity = world.GetEntity(Convert.ToInt32(property.Value));
+                    }
+                    break;
                 case "site_id": Site = world.GetSite(Convert.ToInt32(property.Value)); break;
                 case "name_only": ReceivedName = true; property.Known = true; break;
                 case "hfid": if (HistoricalFigure == null) { HistoricalFigure = world.GetHistoricalFigure(Convert.ToInt32(property.Value)); } else { property.Known = true; } break;
@@ -87,6 +93,9 @@ public class ArtifactCreated : WorldEvent
                                         break;
                                     case "favoritepossession":
                                         Circumstance = Circumstance.FavoritePossession;
+                                        break;
+                                    case "preservebody":
+                                        Circumstance = Circumstance.PreserveBody;
                                         break;
                                     default:
                                         property.Known = false;
@@ -148,7 +157,14 @@ public class ArtifactCreated : WorldEvent
         {
             sb.Append(" in order to sanctify ");
             sb.Append(SanctifyFigure.ToLink(link, pov, this));
-            sb.Append(" by preserving a part of the body");
+            if (Circumstance == Circumstance.PreserveBody)
+            {
+                sb.Append(" by preserving a part of the body");
+            }
+            else if (Circumstance == Circumstance.FavoritePossession)
+            {
+                sb.Append("'s favorite possession");
+            }
         }
 
         if (DefeatedFigure != null)

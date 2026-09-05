@@ -31,6 +31,7 @@ public class HfLearnsSecret : WorldEvent
                 case "secret_text": SecretText = property.Value.Replace("[IS_NAME:", "").Replace("]", ""); break;
                 case "unk_1":
                 case "interaction_effect":
+                case "interaction_source":
                     if (property.Value != "-1")
                     {
                         property.Known = false;

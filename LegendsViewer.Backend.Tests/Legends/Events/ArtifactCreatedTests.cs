@@ -371,7 +371,15 @@ public class ArtifactCreatedTests
             new Property { Name = "artifact_id", Value = "1" },
             new Property { Name = "hist_figure_id", Value = "1" },
             new Property { Name = "reason", Value = "sanctify_hf" },
-            new Property { Name = "sanctify_hf", Value = "2" }
+            new Property { Name = "sanctify_hf", Value = "2" },
+            new Property
+            {
+                Name = "circumstance",
+                SubProperties = new List<Property>
+                {
+                    new Property { Name = "type", Value = "preservebody" }
+                }
+            }
         };
         var artifactCreated = new ArtifactCreated(properties, _mockWorld.Object);
 
@@ -382,6 +390,45 @@ public class ArtifactCreatedTests
         Assert.IsTrue(result.Contains("sanctify"));
         Assert.IsTrue(result.Contains("Sanctify Figure"));
         Assert.IsTrue(result.Contains("preserving a part of the body"));
+    }
+
+    [TestMethod]
+    public void Print_WithSanctifyFigure_FavoritePossession_DoesNotContainPreserveBody()
+    {
+        // Arrange
+        var sanctifyFigure = new HistoricalFigure
+        {
+            Id = 2,
+            Name = "Sanctify Figure",
+            Icon = "person"
+        };
+        _mockWorld.Setup(w => w.GetHistoricalFigure(2)).Returns(sanctifyFigure);
+
+        var properties = new List<Property>
+        {
+            new Property { Name = "artifact_id", Value = "1" },
+            new Property { Name = "hist_figure_id", Value = "1" },
+            new Property { Name = "reason", Value = "sanctify_hf" },
+            new Property { Name = "sanctify_hf", Value = "2" },
+            new Property
+            {
+                Name = "circumstance",
+                SubProperties = new List<Property>
+                {
+                    new Property { Name = "type", Value = "favoritepossession" }
+                }
+            }
+        };
+        var artifactCreated = new ArtifactCreated(properties, _mockWorld.Object);
+
+        // Act
+        var result = artifactCreated.Print(link: true);
+
+        // Assert
+        Assert.IsTrue(result.Contains("sanctify"));
+        Assert.IsTrue(result.Contains("Sanctify Figure"));
+        Assert.IsTrue(result.Contains("favorite possession"));
+        Assert.IsFalse(result.Contains("preserving a part of the body"));
     }
 
     [TestMethod]
