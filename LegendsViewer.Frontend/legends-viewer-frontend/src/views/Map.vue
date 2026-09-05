@@ -85,9 +85,10 @@ function createMarker(siteType: SiteType, siteColor: string | null | undefined, 
   const config = siteTypeMarkers[siteType];
   const color = config?.color ?? siteColor ?? "#666"
   const size = config?.size ?? 3;
+  const options = { pane: 'siteMarkerPane', color: color };
   switch (config?.shape) {
     case 'circle':
-      return L.circle(latlng, { color: color, radius: size });
+      return L.circle(latlng, { ...options, radius: size });
     case 'triangle':
       return createPolygon(latlng, 3, size, color);
     case 'square':
@@ -99,7 +100,7 @@ function createMarker(siteType: SiteType, siteColor: string | null | undefined, 
     case 'star':
       return createStar(latlng, 5, size, size / 2, color);
     default:
-      return L.circle(latlng, { color: color, radius: size / 2 });
+      return L.circle(latlng, { ...options, radius: size / 2 });
   }
 }
 
@@ -113,7 +114,7 @@ function createPolygon(center: L.LatLngExpression, sides: number, size: number, 
     ]
     vertices.push(vertex);
   }
-  return L.polygon(vertices, { color });
+  return L.polygon(vertices, { pane: 'siteMarkerPane', color });
 }
 
 function createStar(center: L.LatLngExpression, points: number, outer: number, inner: number, color: string): L.Polygon {
@@ -127,7 +128,7 @@ function createStar(center: L.LatLngExpression, points: number, outer: number, i
     ]
     vertices.push(vertex);
   }
-  return L.polygon(vertices, { color });
+  return L.polygon(vertices, { pane: 'siteMarkerPane', color });
 }
 
 function coordinateKey(x: number, y: number): string {
@@ -295,10 +296,14 @@ export default defineComponent({
         });
         leafletMap.value.on('zoomend', syncSiteCountLayer);
 
-        // Custom pane for pulse highlight circles placed in background below markers (zIndex 350)
+        // Custom pane for pulse highlight circles placed above map overlay (400) and below markers (550)
         const highlightPane = leafletMap.value.createPane('highlightPane');
-        highlightPane.style.zIndex = '350';
+        highlightPane.style.zIndex = '450';
         highlightPane.style.pointerEvents = 'none';
+
+        // Custom pane for interactive site markers (zIndex 550)
+        const siteMarkerPane = leafletMap.value.createPane('siteMarkerPane');
+        siteMarkerPane.style.zIndex = '550';
       }
       await worldStore.loadWorld();
       await mapStore.loadWorldMap('Large');
