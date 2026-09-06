@@ -14706,6 +14706,9 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
+        EventFilterDto: {
+            excludedEventTypes?: string[] | null;
+        };
         CreatureType: {
             type?: string | null;
             /** Format: int32 */
@@ -15245,12 +15248,27 @@ export interface components {
             /** Format: int32 */
             readonly eventCollectionCount?: number;
             region?: components["schemas"]["WorldRegion"];
+            regionLink?: string | null;
+            regionName?: string | null;
+            regionType?: string | null;
+            regionEvilness?: string | null;
             coordinates?: components["schemas"]["Location"][] | null;
             /** Format: int32 */
             height?: number;
             heightMeter?: string | null;
+            heightFeet?: string | null;
             isVolcano?: boolean;
             readonly typeAsString?: string | null;
+            /** Format: int32 */
+            worldRank?: number;
+            /** Format: int32 */
+            totalPeaksInWorld?: number;
+            isHighestInWorld?: boolean;
+            /** Format: int32 */
+            regionalRank?: number;
+            /** Format: int32 */
+            totalPeaksInRegion?: number;
+            isHighestInRegion?: boolean;
         };
         MusicalForm: {
             /** Format: int32 */
@@ -15540,6 +15558,11 @@ export interface components {
             endPos?: components["schemas"]["Location"];
             path?: string | null;
             coordinates?: components["schemas"]["Location"][] | null;
+            /** Format: int32 */
+            readonly length?: number;
+            readonly regionLinks?: string[] | null;
+            readonly siteLinks?: string[] | null;
+            readonly constructionLinks?: string[] | null;
         };
         Site: {
             /** Format: int32 */
@@ -15738,6 +15761,9 @@ export interface components {
             depth?: number | null;
             regionType?: components["schemas"]["RegionType"];
             readonly battleLinks?: string[] | null;
+            readonly regionLinks?: string[] | null;
+            readonly siteLinks?: string[] | null;
+            readonly breachLinks?: string[] | null;
             coordinates?: components["schemas"]["Location"][] | null;
             /** Format: int32 */
             readonly squareTiles?: number;
@@ -15807,8 +15833,14 @@ export interface components {
             coordinates?: components["schemas"]["Location"][] | null;
             readonly site1ToLink?: string | null;
             readonly site2ToLink?: string | null;
+            readonly riverLinks?: string[] | null;
+            readonly regionLinks?: string[] | null;
+            readonly undergroundRegionLinks?: string[] | null;
             readonly sectionLinks?: string[] | null;
             readonly masterConstructionToLink?: string | null;
+            readonly masterConstructionType?: string | null;
+            /** Format: int32 */
+            readonly squareTiles?: number;
         };
         /** @enum {string} */
         WorldConstructionType: "Unknown" | "Road" | "Bridge" | "Tunnel";
@@ -15914,7 +15946,9 @@ export interface components {
             /** Format: int32 */
             readonly squareTiles?: number;
             readonly siteLinks?: string[] | null;
+            readonly riverLinks?: string[] | null;
             readonly mountainPeakLinks?: string[] | null;
+            readonly constructionLinks?: string[] | null;
             evilness?: components["schemas"]["Evilness"];
             readonly forceLink?: string | null;
         };

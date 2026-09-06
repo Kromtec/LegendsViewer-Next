@@ -4,6 +4,7 @@ import { paths } from '../generated/api-schema';
 import { components } from '../generated/api-schema'; // Import from the OpenAPI schema
 import { LoadItemsSortOption } from '../types/legends';
 import { UnwrapRef } from 'vue';
+import { useEventFilterStore } from './eventFilterStore';
 
 type PathsWithMethod<TPaths, TMethod extends string> = {
     [K in keyof TPaths]: TPaths[K] extends { [method in TMethod]: any } ? K : never;
@@ -437,8 +438,9 @@ export function createWorldObjectStore<T>(resourceName: string, type: string) {
             },
             async loadEvents(id: number, pageNumber: number, pageSize: number, sortBy: LoadItemsSortOption[]) {
                 this.isLoading = true;
+                const eventFilterStore = useEventFilterStore();
                 // @ts-ignore
-                const { data, error } = await client.GET(pathsForResource.objectEvents, {
+                const { data, error } = await client.POST(pathsForResource.objectEvents, {
                     params: {
                         path: { id: id },
                         query: {
@@ -448,6 +450,7 @@ export function createWorldObjectStore<T>(resourceName: string, type: string) {
                             sortOrder: sortBy[0]?.order
                         },
                     },
+                    body: eventFilterStore.filterDto
                 });
 
                 if (error !== undefined) {
@@ -484,8 +487,11 @@ export function createWorldObjectStore<T>(resourceName: string, type: string) {
             },
             async loadEventChartData(id: number) {
                 this.isLoading = true;
-                const { data, error } = await client.GET(pathsForResource.eventChart, {
+                const eventFilterStore = useEventFilterStore();
+                // @ts-ignore
+                const { data, error } = await client.POST(pathsForResource.eventChart, {
                     params: { path: { id: id } },
+                    body: eventFilterStore.filterDto
                 });
 
                 if (error !== undefined) {
@@ -498,8 +504,11 @@ export function createWorldObjectStore<T>(resourceName: string, type: string) {
             },
             async loadEventTypeChartData(id: number) {
                 this.isLoading = true;
-                const { data, error } = await client.GET(pathsForResource.eventTypeChart, {
+                const eventFilterStore = useEventFilterStore();
+                // @ts-ignore
+                const { data, error } = await client.POST(pathsForResource.eventTypeChart, {
                     params: { path: { id: id } },
+                    body: eventFilterStore.filterDto
                 });
 
                 if (error !== undefined) {
@@ -513,3 +522,4 @@ export function createWorldObjectStore<T>(resourceName: string, type: string) {
         },
     });
 }
+

@@ -29,7 +29,22 @@ public class WorldConstruction : WorldObject, IHasCoordinates
 
     [JsonIgnore]
     public WorldConstruction? MasterConstruction { get; set; } // legends_plus.xml
+
+    [JsonIgnore]
+    public List<River> Rivers { get; set; } = [];
+    public List<string> RiverLinks => Rivers.ConvertAll(r => r.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<WorldRegion> Regions { get; set; } = [];
+    public List<string> RegionLinks => Regions.ConvertAll(r => r.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<UndergroundRegion> UndergroundRegions { get; set; } = [];
+    public List<string> UndergroundRegionLinks => UndergroundRegions.ConvertAll(u => u.ToLink(true, this));
+
+    public int SquareTiles => Coordinates.Count;
     public string? MasterConstructionToLink => MasterConstruction?.ToLink(true);
+    public string? MasterConstructionType => MasterConstruction?.WorldConstructionType.ToString();
 
     public WorldConstruction(List<Property> properties, IWorld world)
         : base(properties, world)

@@ -57,8 +57,7 @@ public class XmlParser : IDisposable
             {
                 await XmlReader.ReadAsync();
             }
-            else if (CurrentSection == Section.Unknown || CurrentSection == Section.Landmasses ||
-                     CurrentSection == Section.MountainPeaks)
+            else if (CurrentSection == Section.Unknown)
             {
                 await SkipSectionAsync();
             }

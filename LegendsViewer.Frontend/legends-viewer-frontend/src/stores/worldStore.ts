@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import client from "../apiClient"; // Import the global client
 import { components } from '../generated/api-schema'; // Import from the OpenAPI schema
 import { LoadItemsSortOption } from '../types/legends';
+import { useEventFilterStore } from './eventFilterStore';
+
+import { useWorldRecordsStore } from './worldRecordsStore';
 
 export type WorldDto = components['schemas']['WorldDto'];
 // Common types
@@ -39,13 +42,18 @@ export const useWorldStore = defineStore('world', {
                 this.isLoading = false;
                 console.error(error);
             } else if (data) {
+                if (this.world && (this.world.name !== data.name || this.world.alternativeName !== data.alternativeName)) {
+                    useWorldRecordsStore().clearRecords();
+                }
                 this.world = data;
                 this.isLoading = false;
             }
         },
         async loadEvents(pageNumber: number, pageSize: number, sortBy: LoadItemsSortOption[]) {
             this.isLoading = true;
-            const { data, error } = await client.GET("/api/World/events", {
+            const eventFilterStore = useEventFilterStore();
+            // @ts-ignore
+            const { data, error } = await client.POST("/api/World/events", {
                 params: {
                     query: {
                         pageNumber: pageNumber,
@@ -54,6 +62,7 @@ export const useWorldStore = defineStore('world', {
                         sortOrder: sortBy[0]?.order
                     },
                 },
+                body: eventFilterStore.filterDto
             });
 
             if (error !== undefined) {
@@ -89,7 +98,11 @@ export const useWorldStore = defineStore('world', {
         },
         async loadEventChartData() {
             this.isLoading = true;
-            const { data, error } = await client.GET("/api/World/eventchart");
+            const eventFilterStore = useEventFilterStore();
+            // @ts-ignore
+            const { data, error } = await client.POST("/api/World/eventchart", {
+                body: eventFilterStore.filterDto
+            });
 
             if (error !== undefined) {
                 this.isLoading = false;
@@ -101,7 +114,11 @@ export const useWorldStore = defineStore('world', {
         },
         async loadEventTypeChartData() {
             this.isLoading = true;
-            const { data, error } = await client.GET("/api/World/eventtypechart");
+            const eventFilterStore = useEventFilterStore();
+            // @ts-ignore
+            const { data, error } = await client.POST("/api/World/eventtypechart", {
+                body: eventFilterStore.filterDto
+            });
 
             if (error !== undefined) {
                 this.isLoading = false;

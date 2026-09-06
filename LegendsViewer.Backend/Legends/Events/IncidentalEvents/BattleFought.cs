@@ -19,7 +19,17 @@ public class BattleFought : WorldEvent
 
     public BattleFought(HistoricalFigure hf, Battle battle, IWorld? world, bool asAttacker, bool wasHired = false, bool asScout = false) : base([], world)
     {
-        Id = world?.Events.Count ?? -1;
+        // Synthetic events must get an Id strictly greater than any existing event Id so that
+        // World.Events stays sorted and collision-free. World.GetEvent relies on a binary search
+        // (with a dense-index shortcut) that breaks on duplicate or out-of-order Ids.
+        // Using Events.Count fails whenever the XML contained unsupported event types that were
+        // skipped while parsing: Count then drops below the highest real Id, so synthetic Ids
+        // collide with real ones and lookups resolve to the wrong event. This is what caused late
+        // battles to display "battle fought" events belonging to unrelated, much older battles
+        // (issue #47). Appending with "last Id + 1" keeps the invariant intact in O(1).
+        Id = world == null
+            ? -1
+            : world.Events.Count > 0 ? world.Events[^1].Id + 1 : 0;
         Type = "battle fought";
         Year = battle.StartYear;
         Seconds72 = battle.StartSeconds72;

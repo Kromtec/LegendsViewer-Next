@@ -1,5 +1,9 @@
 using System.Text;
+using System.Text.Json.Serialization;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Events;
+using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.Various;
@@ -12,6 +16,20 @@ public class River : WorldObject, IHasCoordinates
     public Location? EndPos { get; set; } // legends_plus.xml
     public string? Path { get; set; } // legends_plus.xml
     public List<Location> Coordinates { get; set; } // legends_plus.xml
+
+    public int Length => Coordinates.Count;
+
+    [JsonIgnore]
+    public List<WorldRegion> Regions { get; set; } = [];
+    public List<string> RegionLinks => Regions.ConvertAll(r => r.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<Site> Sites { get; set; } = [];
+    public List<string> SiteLinks => Sites.ConvertAll(s => $"{s.ToLink(true, this)} ({s.SiteType.GetDescription()})");
+
+    [JsonIgnore]
+    public List<WorldConstruction> Constructions { get; set; } = [];
+    public List<string> ConstructionLinks => Constructions.ConvertAll(c => $"{c.ToLink(true, this)} ({c.WorldConstructionType.GetDescription()})");
 
     public River(List<Property> properties, IWorld world)
         : base(properties, world)
@@ -76,5 +94,40 @@ public class River : WorldObject, IHasCoordinates
     {
         return Icon;
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("Length", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleLength) &&
+                rule.ViolatesIntegerCriteria(Length, ruleLength))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("RegionCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleRegionCount) &&
+                rule.ViolatesIntegerCriteria(Regions.Count, ruleRegionCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("SiteCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleSiteCount) &&
+                rule.ViolatesIntegerCriteria(Sites.Count, ruleSiteCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("ConstructionCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleConstrCount) &&
+                rule.ViolatesIntegerCriteria(Constructions.Count, ruleConstrCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 

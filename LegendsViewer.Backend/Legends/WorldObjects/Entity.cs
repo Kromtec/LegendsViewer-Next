@@ -848,5 +848,319 @@ public class Entity : WorldObject, IHasCoordinates
         }
         return _civilizationInfo;
     }
+
+    public List<LeaderTimelineDto> GetLeaderTimelines()
+    {
+        List<LeaderTimelineDto> timelines = [];
+
+        // Primary source: Leaders and LeaderTypes parsed from history.txt
+        if (LeaderTypes.Count > 0 && Leaders.Count == LeaderTypes.Count)
+        {
+            for (int i = 0; i < LeaderTypes.Count; i++)
+            {
+                string leaderType = LeaderTypes[i];
+                var leadersList = Leaders[i];
+                if (leadersList == null || leadersList.Count == 0)
+                {
+                    continue;
+                }
+
+                int posId = int.MaxValue;
+                EntityPosition? epMatch = EntityPositions.FirstOrDefault(ep =>
+                    string.Equals(ep.Name, leaderType, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(ep.NameMale, leaderType, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(ep.NameFemale, leaderType, StringComparison.OrdinalIgnoreCase) ||
+                    (ep.Name != null && leaderType.Contains(ep.Name, StringComparison.OrdinalIgnoreCase)) ||
+                    (ep.NameMale != null && leaderType.Contains(ep.NameMale, StringComparison.OrdinalIgnoreCase)) ||
+                    (ep.NameFemale != null && leaderType.Contains(ep.NameFemale, StringComparison.OrdinalIgnoreCase)));
+
+                if (epMatch != null)
+                {
+                    posId = epMatch.Id;
+                }
+                else
+                {
+                    var sampleHfPos = leadersList
+                        .SelectMany(l => l.Positions ?? [])
+                        .FirstOrDefault(p => p.Entity == this && (string.Equals(p.Title, leaderType, StringComparison.OrdinalIgnoreCase) || p.Title.Contains(leaderType, StringComparison.OrdinalIgnoreCase)));
+                    if (sampleHfPos != null)
+                    {
+                        posId = sampleHfPos.PositionId;
+                    }
+                    else
+                    {
+                        posId = i;
+                    }
+                }
+
+                var timelineDto = new LeaderTimelineDto
+                {
+                    PositionId = posId,
+                    LeaderType = leaderType,
+                    Leaders = []
+                };
+
+                for (int j = leadersList.Count - 1; j >= 0; j--)
+                {
+                    HistoricalFigure leader = leadersList[j];
+                    HistoricalFigure? prevLeader = j > 0 ? leadersList[j - 1] : null;
+
+                    timelineDto.Leaders.Add(CreateLeaderTimelineItemDto(leader, prevLeader, leaderType));
+                }
+
+                if (timelineDto.Leaders.Count > 0)
+                {
+                    timelines.Add(timelineDto);
+                }
+            }
+        }
+
+        // Secondary source: If no LeaderTypes from history.txt, build from World HistoricalFigures positions
+        if (timelines.Count == 0 && World != null)
+        {
+            var hfPositionsForEntity = World.HistoricalFigures
+                .SelectMany(hf => (hf.Positions ?? []).Where(p => p.Entity == this).Select(p => new { HistoricalFigure = hf, Position = p }))
+                .ToList();
+
+            if (hfPositionsForEntity.Count > 0)
+            {
+                var groupedByTitle = hfPositionsForEntity
+                    .GroupBy(x => !string.IsNullOrEmpty(x.Position.Title) ? x.Position.Title : "Leader")
+                    .ToList();
+
+                foreach (var group in groupedByTitle)
+                {
+                    var sortedLeaders = group
+                        .OrderBy(x => x.Position.StartYear ?? -1)
+                        .ThenBy(x => x.HistoricalFigure.BirthYear)
+                        .Select(x => x.HistoricalFigure)
+                        .Distinct()
+                        .ToList();
+
+                    int posId = int.MaxValue;
+                    EntityPosition? epMatch = EntityPositions.FirstOrDefault(ep =>
+                        string.Equals(ep.Name, group.Key, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ep.NameMale, group.Key, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ep.NameFemale, group.Key, StringComparison.OrdinalIgnoreCase) ||
+                        (ep.Name != null && group.Key.Contains(ep.Name, StringComparison.OrdinalIgnoreCase)) ||
+                        (ep.NameMale != null && group.Key.Contains(ep.NameMale, StringComparison.OrdinalIgnoreCase)) ||
+                        (ep.NameFemale != null && group.Key.Contains(ep.NameFemale, StringComparison.OrdinalIgnoreCase)));
+
+                    if (epMatch != null)
+                    {
+                        posId = epMatch.Id;
+                    }
+                    else
+                    {
+                        var sampleHfPos = group.FirstOrDefault(x => x.Position.Entity == this)?.Position;
+                        if (sampleHfPos != null)
+                        {
+                            posId = sampleHfPos.PositionId;
+                        }
+                    }
+
+                    var timelineDto = new LeaderTimelineDto
+                    {
+                        PositionId = posId,
+                        LeaderType = group.Key,
+                        Leaders = []
+                    };
+
+                    for (int j = sortedLeaders.Count - 1; j >= 0; j--)
+                    {
+                        HistoricalFigure leader = sortedLeaders[j];
+                        HistoricalFigure? prevLeader = j > 0 ? sortedLeaders[j - 1] : null;
+
+                        timelineDto.Leaders.Add(CreateLeaderTimelineItemDto(leader, prevLeader, group.Key));
+                    }
+
+                    if (timelineDto.Leaders.Count > 0)
+                    {
+                        timelines.Add(timelineDto);
+                    }
+                }
+            }
+        }
+
+        return timelines.OrderBy(t => t.PositionId).ThenBy(t => t.LeaderType).ToList();
+    }
+
+    private LeaderTimelineItemDto CreateLeaderTimelineItemDto(HistoricalFigure leader, HistoricalFigure? prevLeader, string leaderType)
+    {
+        var item = new LeaderTimelineItemDto
+        {
+            Id = leader.Id,
+            Name = leader.Name,
+            Link = leader.ToLink(true, this),
+            Caste = leader.Caste,
+            Race = leader.Race?.NameSingular ?? string.Empty,
+            IsAlive = leader.IsAlive,
+            BirthYear = leader.BirthYear,
+            DeathYear = leader.DeathYear,
+            DeathCause = leader.DeathCause != DeathCause.None ? leader.DeathCause.GetDescription() : string.Empty
+        };
+
+        var pos = leader.Positions?.OrderBy(p => p.StartYear ?? -1)
+            .FirstOrDefault(p => p.Entity == this && (string.Equals(p.Title, leaderType, StringComparison.OrdinalIgnoreCase) || p.Title.Contains(leaderType, StringComparison.OrdinalIgnoreCase)))
+            ?? leader.Positions?.FirstOrDefault(p => p.Entity == this);
+
+        item.StartYear = pos?.StartYear;
+        item.EndYear = pos?.EndYear ?? (leader.DeathYear > -1 ? leader.DeathYear : null);
+
+        item.StartYearDisplay = pos?.StartYear == null || pos.StartYear == -1 ? "a time before time" : $"Year {pos.StartYear}";
+        item.EndYearDisplay = item.EndYear == null ? "Present Day" : $"Year {item.EndYear}";
+
+        int currentYear = World?.CurrentYear ?? 0;
+        if (item.StartYear != null)
+        {
+            int startVal = item.StartYear.Value < 0 ? 0 : item.StartYear.Value;
+            int endVal = item.EndYear ?? currentYear;
+            int duration = endVal - startVal;
+            if (duration <= 0)
+            {
+                item.ReignDuration = "Less than 1 year";
+            }
+            else
+            {
+                item.ReignDuration = item.EndYear == null ? $"{duration} years (reigning)" : $"{duration} years";
+            }
+        }
+        else
+        {
+            item.ReignDuration = "Unknown duration";
+        }
+
+        EntityPosition? entityPos = EntityPositions.FirstOrDefault(ep =>
+            string.Equals(ep.Name, leaderType, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(ep.NameMale, leaderType, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(ep.NameFemale, leaderType, StringComparison.OrdinalIgnoreCase) ||
+            ep.Id == pos?.PositionId);
+
+        if (entityPos != null)
+        {
+            item.PositionTitle = entityPos.GetTitleByCaste(leader.Caste);
+        }
+        else if (pos != null && !string.IsNullOrWhiteSpace(pos.Title))
+        {
+            item.PositionTitle = pos.Title;
+        }
+        else
+        {
+            item.PositionTitle = leaderType;
+        }
+
+        if (prevLeader == null)
+        {
+            item.PredecessorRelation = "Founder";
+        }
+        else
+        {
+            var link = leader.RelatedHistoricalFigures.FirstOrDefault(f => f.HistoricalFigure == prevLeader);
+            bool isFemale = string.Equals(leader.Caste, "Female", StringComparison.OrdinalIgnoreCase);
+            bool isMale = string.Equals(leader.Caste, "Male", StringComparison.OrdinalIgnoreCase);
+
+            if (link != null)
+            {
+                switch (link.Type)
+                {
+                    case HistoricalFigureLinkType.Father:
+                    case HistoricalFigureLinkType.Mother:
+                        item.PredecessorRelation = isFemale ? $"Daughter of {prevLeader.Name}" : isMale ? $"Son of {prevLeader.Name}" : $"Child of {prevLeader.Name}";
+                        break;
+                    case HistoricalFigureLinkType.Child:
+                        item.PredecessorRelation = isFemale ? $"Mother of {prevLeader.Name}" : isMale ? $"Father of {prevLeader.Name}" : $"Parent of {prevLeader.Name}";
+                        break;
+                    case HistoricalFigureLinkType.Spouse:
+                    case HistoricalFigureLinkType.FormerSpouse:
+                    case HistoricalFigureLinkType.DeceasedSpouse:
+                        item.PredecessorRelation = isFemale ? $"Wife of {prevLeader.Name}" : isMale ? $"Husband of {prevLeader.Name}" : $"Spouse of {prevLeader.Name}";
+                        break;
+                    case HistoricalFigureLinkType.Apprentice:
+                        item.PredecessorRelation = $"Apprentice of {prevLeader.Name}";
+                        break;
+                    case HistoricalFigureLinkType.Master:
+                        item.PredecessorRelation = $"Master of {prevLeader.Name}";
+                        break;
+                    default:
+                        item.PredecessorRelation = $"Replaced {prevLeader.Name} ({link.Type.GetDescription()})";
+                        break;
+                }
+            }
+            else
+            {
+                bool sharesFather = leader.RelatedHistoricalFigures.Any(r => r.Type == HistoricalFigureLinkType.Father && r.HistoricalFigure != null && prevLeader.RelatedHistoricalFigures.Any(p => p.Type == HistoricalFigureLinkType.Father && p.HistoricalFigure == r.HistoricalFigure));
+                bool sharesMother = leader.RelatedHistoricalFigures.Any(r => r.Type == HistoricalFigureLinkType.Mother && r.HistoricalFigure != null && prevLeader.RelatedHistoricalFigures.Any(p => p.Type == HistoricalFigureLinkType.Mother && p.HistoricalFigure == r.HistoricalFigure));
+                if (sharesFather || sharesMother)
+                {
+                    item.PredecessorRelation = isFemale ? $"Sister of {prevLeader.Name}" : isMale ? $"Brother of {prevLeader.Name}" : $"Sibling of {prevLeader.Name}";
+                }
+                else
+                {
+                    item.PredecessorRelation = $"Successor to {prevLeader.Name}";
+                }
+            }
+        }
+
+        return item;
+    }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals(nameof(IsCiv), StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(IsCiv))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("HasCurrentSites", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(CurrentSites.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("WorshipsDeity", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Worshipped.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals(nameof(EntityType), StringComparison.InvariantCultureIgnoreCase))
+            {
+                string entityTypeStr = EntityType.ToString();
+                string typeDescription = EntityType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !entityTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !typeDescription.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (entityTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     typeDescription.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            if (rule.PropertyName.Equals("CurrentSitesCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleSiteCount) &&
+                rule.ViolatesIntegerCriteria(CurrentSites.Count, ruleSiteCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("WarCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleWarCount) &&
+                rule.ViolatesIntegerCriteria(Wars.Count, ruleWarCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 

@@ -86,4 +86,23 @@ public class LegendsParserTests
         Assert.AreEqual(50, world.Rivers.Count, $"Expected 50 rivers, but got {world.Rivers.Count}");
         Assert.AreEqual(2, world.MountainPeaks.Count, $"Expected 2 mountain peaks, but got {world.MountainPeaks.Count}");
     }
+
+    [TestMethod]
+    public async Task Test_WorldRecordsCalculator_Success()
+    {
+        // Arrange
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var world = new World();
+        var legendsPath = Path.Combine(AppContext.BaseDirectory, "TestData", "Xah_Atho-00005-01-01-legends.xml");
+        var legendsPlusPath = Path.Combine(AppContext.BaseDirectory, "TestData", "Xah_Atho-00005-01-01-legends_plus.xml");
+        await world.ParseAsync(legendsPath, legendsPlusPath, null, null, null);
+
+        // Act
+        var records = world.GetOrComputeWorldRecords();
+
+        // Assert
+        Assert.IsNotNull(records, "World records should not be null");
+        Assert.AreEqual(6, records.Categories.Count, "Expected 6 record categories");
+        Assert.IsNotNull(records.Highlights, "Highlights should not be null");
+    }
 }

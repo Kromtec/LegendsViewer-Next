@@ -1,7 +1,9 @@
-﻿using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Extensions;
+using LegendsViewer.Backend.Legends;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Maps;
+using LegendsViewer.Backend.Legends.Various;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LegendsViewer.Backend.Controllers;
@@ -21,6 +23,7 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         return Ok(new WorldDto(_worldDataService, _worldMapImageGenerator));
     }
     [HttpGet("events")]
+    [HttpPost("events")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -28,20 +31,22 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = DefaultPageSize,
         [FromQuery] string? sortKey = null,
-        [FromQuery] string? sortOrder = null)
+        [FromQuery] string? sortOrder = null,
+        [FromBody] EventFilterDto? filter = null)
     {
-
         // Validate pagination parameters
         if (pageNumber <= 0 || pageSize <= 0)
         {
             return BadRequest("Page number and page size must be greater than zero.");
         }
 
+        var filteredEvents = _worldDataService.Events.Where(e => e.MatchesFilterCriteria(filter));
+
         // Get total number of elements
-        int totalElements = _worldDataService.Events.Count;
+        int totalElements = filteredEvents.Count();
 
         // Calculate how many elements to skip based on the page number and size
-        var paginatedElements = _worldDataService.Events
+        var paginatedElements = filteredEvents
             .SortByProperty(sortKey, sortOrder)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -53,6 +58,7 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         {
             Items = paginatedElements,
             TotalCount = totalElements,
+            TotalFilteredCount = totalElements,
             PageSize = pageSize,
             PageNumber = pageNumber,
             TotalPages = (int)Math.Ceiling(totalElements / (double)pageSize)
@@ -102,8 +108,9 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
     }
 
     [HttpGet("eventchart")]
+    [HttpPost("eventchart")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<ChartDataDto> GetEventChart()
+    public ActionResult<ChartDataDto> GetEventChart([FromBody] EventFilterDto? filter = null)
     {
         var response = new ChartDataDto();
         var dataset = new ChartDatasetDto
@@ -111,8 +118,10 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
             Label = "Events per Year"
         };
 
+        var filteredEvents = _worldDataService.Events.Where(e => e.MatchesFilterCriteria(filter));
+
         // Group by year and count events per year
-        var eventCounts = _worldDataService.Events
+        var eventCounts = filteredEvents
             .GroupBy(e => e.Year)
             .ToDictionary(g => g.Key, g => g.Count());
 
@@ -140,8 +149,9 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
     }
 
     [HttpGet("eventtypechart")]
+    [HttpPost("eventtypechart")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<ChartDataDto> GetEventTypeChart()
+    public ActionResult<ChartDataDto> GetEventTypeChart([FromBody] EventFilterDto? filter = null)
     {
         var response = new ChartDataDto();
         var dataset = new ChartDatasetDto
@@ -149,7 +159,7 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
             Label = "Occurrences per Event Type"
         };
 
-        // Group by type and count events per type
+        // Group by type and count events per type (unfiltered so type selection popup retains all types)
         var eventCounts = _worldDataService.Events
             .GroupBy(e => e.Type)
             .ToDictionary(g => g.Key, g => g.Count());
@@ -164,4 +174,16 @@ public class WorldController(IWorld worldDataService, IWorldMapImageGenerator wo
         response.Datasets.Add(dataset);
         return Ok(response);
     }
+
+    [HttpGet("records")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<WorldRecordsDto> GetWorldRecords()
+    {
+        if (_worldDataService is World world)
+        {
+            return Ok(WorldRecordsCalculator.Calculate(world));
+        }
+        return Ok(new WorldRecordsDto());
+    }
 }
+

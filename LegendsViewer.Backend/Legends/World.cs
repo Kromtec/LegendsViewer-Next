@@ -1,7 +1,8 @@
-﻿using System.Data;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.EventCollections;
@@ -91,6 +92,13 @@ public class World : IDisposable, IWorld
     public StringBuilder Log { get; } = new StringBuilder();
     public ParsingErrors ParsingErrors { get; } = new ParsingErrors();
 
+    private WorldRecordsDto? _cachedWorldRecords;
+
+    public WorldRecordsDto GetOrComputeWorldRecords()
+    {
+        return _cachedWorldRecords ??= WorldRecordsCalculator.Calculate(this);
+    }
+
 
     private readonly List<HistoricalFigure> _hFtoHfLinkHFs = [];
     private readonly List<Property> _hFtoHfLinks = [];
@@ -144,6 +152,9 @@ public class World : IDisposable, IWorld
         ResolveArtifactProperties();
         ResolveArtformEventsProperties();
         ResolveEntityIsMainCiv();
+        ResolveRiverProperties();
+        ResolveUndergroundRegionProperties();
+        ResolveWorldConstructionProperties();
 
         GenerateCivColors();
 
@@ -602,6 +613,248 @@ public class World : IDisposable, IWorld
         }
     }
 
+    private void ResolveWorldConstructionProperties()
+    {
+        var uregionLocationMap = new Dictionary<Location, List<UndergroundRegion>>();
+        foreach (var uregion in UndergroundRegions)
+        {
+            foreach (var coord in uregion.Coordinates)
+            {
+                if (!uregionLocationMap.TryGetValue(coord, out var list))
+                {
+                    list = [];
+                    uregionLocationMap[coord] = list;
+                }
+                list.Add(uregion);
+            }
+        }
+
+        foreach (var construction in WorldConstructions)
+        {
+            var regionSet = new HashSet<WorldRegion>();
+            var uregionSet = new HashSet<UndergroundRegion>();
+
+            foreach (var coord in construction.Coordinates)
+            {
+                if (WorldGrid.TryGetValue(coord, out var region) && region != null)
+                {
+                    regionSet.Add(region);
+                    if (!region.Constructions.Contains(construction))
+                    {
+                        region.Constructions.Add(construction);
+                    }
+                }
+                if (uregionLocationMap.TryGetValue(coord, out var ulist))
+                {
+                    foreach (var ureg in ulist)
+                    {
+                        uregionSet.Add(ureg);
+                    }
+                }
+            }
+
+            var effectiveType = construction.WorldConstructionType;
+            if ((effectiveType == WorldConstructionType.Unknown || effectiveType == WorldConstructionType.Bridge) && construction.MasterConstruction != null)
+            {
+                if (construction.MasterConstruction.WorldConstructionType != WorldConstructionType.Unknown)
+                {
+                    effectiveType = construction.MasterConstruction.WorldConstructionType;
+                }
+            }
+
+            if (effectiveType == WorldConstructionType.Road)
+            {
+                construction.Regions = [.. regionSet.OrderBy(r => r.Name)];
+                construction.UndergroundRegions = [];
+            }
+            else if (effectiveType == WorldConstructionType.Tunnel)
+            {
+                construction.Regions = [];
+                construction.UndergroundRegions = [.. uregionSet.OrderBy(u => u.Name)];
+            }
+            else if (effectiveType == WorldConstructionType.Bridge)
+            {
+                var masterType = construction.MasterConstruction?.WorldConstructionType;
+                if (masterType == WorldConstructionType.Road)
+                {
+                    construction.Regions = [.. regionSet.OrderBy(r => r.Name)];
+                    construction.UndergroundRegions = [];
+                }
+                else if (masterType == WorldConstructionType.Tunnel)
+                {
+                    construction.Regions = [];
+                    construction.UndergroundRegions = [.. uregionSet.OrderBy(u => u.Name)];
+                }
+                else
+                {
+                    if (regionSet.Count > 0)
+                    {
+                        construction.Regions = [.. regionSet.OrderBy(r => r.Name)];
+                        construction.UndergroundRegions = [];
+                    }
+                    else
+                    {
+                        construction.Regions = [];
+                        construction.UndergroundRegions = [.. uregionSet.OrderBy(u => u.Name)];
+                    }
+                }
+            }
+            else
+            {
+                construction.Regions = [.. regionSet.OrderBy(r => r.Name)];
+                construction.UndergroundRegions = [.. uregionSet.OrderBy(u => u.Name)];
+            }
+        }
+    }
+
+    private void ResolveUndergroundRegionProperties()
+    {
+        var siteLocationMap = new Dictionary<Location, List<Site>>();
+        foreach (var site in Sites)
+        {
+            foreach (var coord in site.Coordinates)
+            {
+                if (!siteLocationMap.TryGetValue(coord, out var siteList))
+                {
+                    siteList = [];
+                    siteLocationMap[coord] = siteList;
+                }
+                siteList.Add(site);
+            }
+        }
+
+        foreach (var uregion in UndergroundRegions)
+        {
+            var regionSet = new HashSet<WorldRegion>();
+            var siteSet = new HashSet<Site>();
+            foreach (var coord in uregion.Coordinates)
+            {
+                if (WorldGrid.TryGetValue(coord, out var region) && region != null)
+                {
+                    regionSet.Add(region);
+                }
+                if (siteLocationMap.TryGetValue(coord, out var siteList))
+                {
+                    foreach (var site in siteList)
+                    {
+                        siteSet.Add(site);
+                    }
+                }
+            }
+            uregion.Regions = [.. regionSet.OrderBy(r => r.Name)];
+            uregion.Sites = [.. siteSet.OrderBy(s => s.Name)];
+        }
+    }
+
+    private void ResolveRiverProperties()
+    {
+        var siteLocationMap = new Dictionary<(int X, int Y), List<Site>>();
+        foreach (var site in Sites)
+        {
+            var siteLocs = new HashSet<(int X, int Y)>();
+            foreach (var coord in site.Coordinates)
+            {
+                siteLocs.Add((coord.X, coord.Y));
+            }
+            if (site.Rectangle.Width > 0 && site.Rectangle.Height > 0)
+            {
+                int maxX = site.Rectangle.X + site.Rectangle.Width;
+                int maxY = site.Rectangle.Y + site.Rectangle.Height;
+                for (int x = site.Rectangle.X; x <= maxX; x++)
+                {
+                    for (int y = site.Rectangle.Y; y <= maxY; y++)
+                    {
+                        siteLocs.Add((x, y));
+                    }
+                }
+            }
+            foreach (var loc in siteLocs)
+            {
+                if (!siteLocationMap.TryGetValue(loc, out var siteList))
+                {
+                    siteList = [];
+                    siteLocationMap[loc] = siteList;
+                }
+                siteList.Add(site);
+            }
+        }
+
+        var constructionLocationMap = new Dictionary<(int X, int Y), List<WorldConstruction>>();
+        foreach (var construction in WorldConstructions)
+        {
+            foreach (var coord in construction.Coordinates)
+            {
+                var loc = (coord.X, coord.Y);
+                if (!constructionLocationMap.TryGetValue(loc, out var constrList))
+                {
+                    constrList = [];
+                    constructionLocationMap[loc] = constrList;
+                }
+                constrList.Add(construction);
+                if (construction.MasterConstruction != null && !constrList.Contains(construction.MasterConstruction))
+                {
+                    constrList.Add(construction.MasterConstruction);
+                }
+            }
+        }
+
+        foreach (var river in Rivers)
+        {
+            var regionList = new List<WorldRegion>();
+            var siteList = new List<Site>();
+            var constructionList = new List<WorldConstruction>();
+
+            foreach (var coord in river.Coordinates)
+            {
+                if (WorldGrid.TryGetValue(coord, out var region))
+                {
+                    if (!regionList.Contains(region))
+                    {
+                        regionList.Add(region);
+                    }
+                    if (!region.Rivers.Contains(river))
+                    {
+                        region.Rivers.Add(river);
+                    }
+                }
+
+                if (siteLocationMap.TryGetValue((coord.X, coord.Y), out var sitesAtLoc))
+                {
+                    foreach (var site in sitesAtLoc)
+                    {
+                        if (!siteList.Contains(site))
+                        {
+                            siteList.Add(site);
+                        }
+                        if (!site.Rivers.Contains(river))
+                        {
+                            site.Rivers.Add(river);
+                        }
+                    }
+                }
+
+                if (constructionLocationMap.TryGetValue((coord.X, coord.Y), out var constrsAtLoc))
+                {
+                    foreach (var constr in constrsAtLoc)
+                    {
+                        if (!constructionList.Contains(constr))
+                        {
+                            constructionList.Add(constr);
+                        }
+                        if (!constr.Rivers.Contains(river))
+                        {
+                            constr.Rivers.Add(river);
+                        }
+                    }
+                }
+            }
+
+            river.Regions = regionList;
+            river.Sites = siteList;
+            river.Constructions = constructionList;
+        }
+    }
+
     private void ResolveArtformEventsProperties()
     {
         foreach (var formCreated in Events.OfType<DanceFormCreated>())
@@ -646,6 +899,7 @@ public class World : IDisposable, IWorld
     {
         foreach (MountainPeak peak in MountainPeaks)
         {
+            if (peak.Coordinates.Count == 0) continue;
             foreach (WorldRegion region in Regions)
             {
                 if (region.Coordinates.Contains(peak.Coordinates[0]))
@@ -653,6 +907,26 @@ public class World : IDisposable, IWorld
                     peak.Region = region;
                     region.MountainPeaks.Add(peak);
                     break;
+                }
+            }
+        }
+
+        int totalPeaks = MountainPeaks.Count;
+        var sortedPeaks = MountainPeaks.OrderByDescending(p => p.Height).ThenBy(p => p.Id).ToList();
+        for (int i = 0; i < sortedPeaks.Count; i++)
+        {
+            sortedPeaks[i].WorldRank = i + 1;
+            sortedPeaks[i].TotalPeaksInWorld = totalPeaks;
+        }
+
+        foreach (WorldRegion region in Regions)
+        {
+            if (region.MountainPeaks.Count > 0)
+            {
+                var regionSorted = region.MountainPeaks.OrderByDescending(p => p.Height).ThenBy(p => p.Id).ToList();
+                for (int i = 0; i < regionSorted.Count; i++)
+                {
+                    regionSorted[i].RegionalRank = i + 1;
                 }
             }
         }
@@ -762,5 +1036,6 @@ public class World : IDisposable, IWorld
         MainRaces.Clear();
         Log.Clear();
         ParsingErrors.Clear();
+        _cachedWorldRecords = null;
     }
 }

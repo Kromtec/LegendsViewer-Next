@@ -42,7 +42,7 @@
         <v-col v-if="mapStore?.currentWorldObjectMap" cols="12" xl="4" lg="6" md="12">
             <!-- Location on World Map -->
             <v-card title="Location" :subtitle="'The location of ' + store.object?.name + ' on the world map'"
-                height="400" variant="text" to="/map">
+                height="400" variant="text" :to="{ path: '/map', query: { type: objectType, id: store.object?.id } }">
                 <template v-slot:prepend>
                     <v-icon class="mr-2" icon="mdi-map-search-outline" size="32px"></v-icon>
                 </template>
@@ -60,6 +60,17 @@
                 icon="mdi-calendar-clock" :height="'auto'">
                 <template #compact-content>
                     <div class="ml-12">
+                        <v-chip
+                            v-if="eventFilterStore.isFiltered"
+                            color="warning"
+                            variant="tonal"
+                            closable
+                            class="mb-3"
+                            prepend-icon="mdi-filter-variant"
+                            @click:close="clearEventFilters"
+                        >
+                            Filtered: {{ eventFilterStore.excludedEventTypes.length }} event type(s) hidden (Click X to clear)
+                        </v-chip>
                         <LineChart v-if="store.objectEventChartData != null"
                             :chart-data="store.objectEventChartData" />
                         <v-data-table-server :key="store.object.id"
@@ -74,8 +85,18 @@
                     </div>
                 </template>
                 <template #expanded-content>
-                    <BarChart v-if="store.objectEventTypeChartData != null"
-                        :chart-data="store.objectEventTypeChartData" />
+                    <v-row>
+                        <v-col cols="12" lg="4" md="5">
+                            <EventTypeFilterList
+                                :chart-data="store.objectEventTypeChartData"
+                                @change="reloadEventsAndCharts"
+                            />
+                        </v-col>
+                        <v-col cols="12" lg="8" md="7">
+                            <BarChart v-if="store.objectEventTypeChartData != null"
+                                :chart-data="store.objectEventTypeChartData" />
+                        </v-col>
+                    </v-row>
                 </template>
             </ExpandableCard>
         </v-col>
@@ -117,8 +138,11 @@ import LineChart from '../components/LineChart.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import BarChart from './BarChart.vue';
 import { useFavoriteStore } from '../stores/favoriteStore';
+import { useEventFilterStore } from '../stores/eventFilterStore';
+import EventTypeFilterList from './filter/EventTypeFilterList.vue';
 
 const favoriteStore = useFavoriteStore();
+const eventFilterStore = useEventFilterStore();
 
 const route = useRoute()
 const routeId = computed(() => {
@@ -135,6 +159,17 @@ const loadEvents = async ({ page, itemsPerPage, sortBy }: LoadItemsOptions) => {
 const loadEventCollections = async ({ page, itemsPerPage, sortBy }: LoadItemsOptions) => {
     await props.store.loadEventCollections(routeId.value, page, itemsPerPage, sortBy)
 }
+
+const reloadEventsAndCharts = async () => {
+    await props.store.loadEventChartData(routeId.value);
+    await props.store.loadEventTypeChartData(routeId.value);
+    await loadEvents({ page: 1, itemsPerPage: props.store.objectEventsPerPage, sortBy: eventSortBy });
+};
+
+const clearEventFilters = async () => {
+    eventFilterStore.clearFilters();
+    await reloadEventsAndCharts();
+};
 
 const eventSortBy: LoadItemsSortOption[] = [{ key: 'date', order: 'asc' }]
 
@@ -189,5 +224,6 @@ watch(
 )
 
 </script>
+
 
 <style scoped></style>

@@ -1,36 +1,36 @@
 <template>
-  <v-list-item>
-    <v-checkbox
-      style="float: left; margin: -10px;"
-      :label="label"
-      v-model="proxyActive"
-    ></v-checkbox>
-    <div style="float: right;">
-      <v-row>
-        <v-col>
-          <v-select
-            density="compact"
-            label=""
-            :items="operators"
-            v-model="proxyOperator"
-            width="120"
-          ></v-select>
-        </v-col>
-        <v-col>
-          <v-number-input
-            density="compact"
-            :reverse="false"
-            controlVariant="stacked"
-            label=""
-            :hideInput="false"
-            :inset="true"
-            width="120"
-            v-model="proxyValue"
-          ></v-number-input>
-        </v-col>
-      </v-row>
+  <div class="d-flex align-center justify-space-between px-4 py-1" style="width: 100%;">
+    <div class="d-flex align-center flex-grow-1 pr-2 overflow-hidden">
+      <v-checkbox
+        hide-details
+        density="compact"
+        :label="label"
+        v-model="proxyActive"
+        class="ma-0 pa-0 text-truncate"
+      ></v-checkbox>
     </div>
-  </v-list-item>
+    <div class="d-flex align-center ga-2 flex-shrink-0">
+      <v-select
+        density="compact"
+        hide-details
+        label=""
+        :items="operators"
+        v-model="proxyOperator"
+        width="110"
+      ></v-select>
+      <v-number-input
+        density="compact"
+        hide-details
+        :reverse="false"
+        controlVariant="stacked"
+        label=""
+        :hideInput="false"
+        :inset="true"
+        width="100"
+        v-model="proxyValue"
+      ></v-number-input>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

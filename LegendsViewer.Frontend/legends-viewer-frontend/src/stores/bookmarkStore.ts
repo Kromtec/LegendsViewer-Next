@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import client from "../apiClient"; // Import the global client
 import { components } from '../generated/api-schema'; // Import from the OpenAPI schema
+import { useWorldRecordsStore } from './worldRecordsStore';
 
 export type Bookmark = components['schemas']['Bookmark'];
 
@@ -75,6 +76,7 @@ export const useBookmarkStore = defineStore('bookmark', {
           this.bookmarks.push(newBookmark);
         }
 
+        useWorldRecordsStore().clearRecords();
         this.isLoadingNewWorld = false;
       } else {
         // Handle case where both error and data are undefined
@@ -207,6 +209,7 @@ export const useBookmarkStore = defineStore('bookmark', {
           this.bookmarks.push(newBookmark);
         }
 
+        useWorldRecordsStore().clearRecords();
         this.isLoadingNewWorld = false;
       } else {
         // Handle case where both error and data are undefined

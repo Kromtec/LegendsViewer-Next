@@ -1,4 +1,4 @@
-﻿namespace LegendsViewer.Backend.Legends.Enums;
+namespace LegendsViewer.Backend.Legends.Enums;
 
 public enum Circumstance
 {
@@ -10,5 +10,6 @@ public enum Circumstance
     AbductedHf,
     Conflict,
     Trauma,
-    FavoritePossession
+    FavoritePossession,
+    PreserveBody
 }

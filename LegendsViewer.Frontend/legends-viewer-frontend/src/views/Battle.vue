@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useBattleStore } from '../stores/worldObjectStores';
+import { useBattleMapStore } from '../stores/mapStore';
 import WorldObjectPage from '../components/WorldObjectPage.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import DoughnutChart from '../components/DoughnutChart.vue';
@@ -7,6 +8,7 @@ import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData } from '../types/legends';
 
 const store = useBattleStore()
+const mapStore = useBattleMapStore()
 
 
 const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
@@ -17,7 +19,7 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
 </script>
 
 <template>
-    <WorldObjectPage :store="store" :object-type="'battle'">
+    <WorldObjectPage :store="store" :mapStore="mapStore" :object-type="'battle'">
         <template v-slot:type-specific-before-table>
             <template v-for="(list, i) in lists" :key="i">
                 <v-col v-if="list?.items.length" cols="12" xl="4" lg="6" md="12">

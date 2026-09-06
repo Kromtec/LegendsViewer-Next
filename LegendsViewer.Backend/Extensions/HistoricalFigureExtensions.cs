@@ -1,4 +1,4 @@
-﻿using LegendsViewer.Backend.Legends.Cytoscape;
+using LegendsViewer.Backend.Legends.Cytoscape;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.WorldObjects;
 using LegendsViewer.Backend.Utilities;
@@ -211,7 +211,7 @@ public static class HistoricalFigureExtensions
 
     public static bool IsVampire(HistoricalFigure hf)
     {
-        return hf.ActiveInteractions.Any(it => it.Contains("VAMPIRE"));
+        return hf.ActiveInteractions.Any(it => it.Contains("VAMPIRE") || it.Contains("DEITY_MAJOR_CURSE"));
     }
 
     public static void AddWorshipper(this HistoricalFigure? worshipped, HistoricalFigure? worshipper, int strength)

@@ -20,6 +20,18 @@ public class UndergroundRegion : WorldObject, IRegion
     public List<Battle> Battles { get; set; } = [];
     public List<string> BattleLinks => Battles.ConvertAll(x => x.ToLink(true, this));
 
+    [JsonIgnore]
+    public List<WorldRegion> Regions { get; set; } = [];
+    public List<string> RegionLinks => Regions.ConvertAll(x => x.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<Site> Sites { get; set; } = [];
+    public List<string> SiteLinks => Sites.ConvertAll(x => x.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<WorldEvent> Breaches => Events.OfType<EntityBreachFeatureLayer>().Cast<WorldEvent>().ToList();
+    public List<string> BreachLinks => Breaches.ConvertAll(x => x.ToLink(true, this));
+
     public List<Location> Coordinates { get; set; } = []; // legends_plus.xml
     public int SquareTiles => Coordinates.Count;
 

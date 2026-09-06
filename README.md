@@ -32,7 +32,7 @@
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/LegendsViewer-Next.git
+   git clone https://github.com/Kromtec/LegendsViewer-Next.git
    cd LegendsViewer-Next
    ```
 2. Restore and run the backend:
@@ -40,7 +40,7 @@
 
 	```bash
 	dotnet restore
-	dotnet run
+	dotnet run --project LegendsViewer.Backend/LegendsViewer.Backend.csproj
 	```
 ### Frontend Setup
 1. Navigate to the frontend directory:

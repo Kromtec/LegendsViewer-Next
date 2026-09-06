@@ -558,5 +558,97 @@ public class Battle : EventCollection, IHasComplexSubtype
     {
         return Icon;
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("HasMercenaries", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(IndividualMercenaries || CompanyMercenaries ||
+                                            AttackingMercenaryEntity != null || DefendingMercenaryEntity != null ||
+                                            AttackerSupportMercenaryEntities.Count > 0 || DefenderSupportMercenaryEntities.Count > 0 ||
+                                            AttackerSupportMercenaryHfs.Count > 0 || DefenderSupportMercenaryHfs.Count > 0))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasUndeadSquads", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(AttackingSquadAnimated || DefendingSquadAnimated))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasNotableDefenders", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(NotableDefenders.Count > 0))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("Outcome", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("BattleOutcome", StringComparison.InvariantCultureIgnoreCase)) &&
+                !string.IsNullOrWhiteSpace(rule.Value))
+            {
+                string outcomeStr = Outcome.ToString();
+                string outcomeDesc = Outcome.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !outcomeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !outcomeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (outcomeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     outcomeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            if ((rule.PropertyName.Equals("TotalDeaths", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("DeathCount", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int totalDeaths) &&
+                rule.ViolatesIntegerCriteria(DeathCount, totalDeaths))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("AttackerCount", StringComparison.InvariantCultureIgnoreCase) &&
+                int.TryParse(rule.Value, out int attackerCount) &&
+                rule.ViolatesIntegerCriteria(AttackerCount, attackerCount))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("DefenderCount", StringComparison.InvariantCultureIgnoreCase) &&
+                int.TryParse(rule.Value, out int defenderCount) &&
+                rule.ViolatesIntegerCriteria(DefenderCount, defenderCount))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("AttackerDeaths", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("AttackerDeathCount", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int attackerDeaths) &&
+                rule.ViolatesIntegerCriteria(AttackerDeathCount, attackerDeaths))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("DefenderDeaths", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("DefenderDeathCount", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int defenderDeaths) &&
+                rule.ViolatesIntegerCriteria(DefenderDeathCount, defenderDeaths))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 

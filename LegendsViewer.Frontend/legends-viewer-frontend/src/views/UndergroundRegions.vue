@@ -15,6 +15,7 @@ const tableHeaders: TableHeader[] = [
     { title: 'Name', key: 'html', align: 'start' },
     { title: 'Type', key: 'type', align: 'start' },
     { title: 'Depth', key: 'subtype', align: 'center' },
+    { title: 'Size', key: 'squareTiles', align: 'end' },
     { title: 'Chronicles', key: 'eventCollectionCount', align: 'end' },
     { title: 'Events', key: 'eventCount', align: 'end' },
 ];

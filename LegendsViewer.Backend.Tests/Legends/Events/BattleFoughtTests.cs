@@ -125,4 +125,55 @@ public class BattleFoughtTests
         Assert.IsTrue(result.Contains("was hired"));
         Assert.IsTrue(result.Contains("as a scout"));
     }
+
+    [TestMethod]
+    public void Constructor_WhenEventListHasGaps_AssignsIdAboveHighestExistingId()
+    {
+        // Arrange: simulate unsupported event types being skipped during parsing, which leaves
+        // World.Events with gaps so Count (3) is lower than the highest existing Id (5).
+        // Regression test for issue #47 where synthetic Ids collided with real event Ids.
+        var existingEvents = new List<LegendsViewer.Backend.Legends.Events.WorldEvent>
+        {
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 0 },
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 1 },
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 5 },
+        };
+        _mockWorld.Setup(w => w.Events).Returns(existingEvents);
+
+        // Act
+        var battleFought = new BattleFought(_historicalFigure, _battle, _mockWorld.Object, asAttacker: true);
+
+        // Assert: must be highest Id + 1 (6), NOT the list Count (3), to avoid colliding with Id 5.
+        Assert.AreEqual(6, battleFought.Id);
+    }
+
+    [TestMethod]
+    public void Constructor_MultipleSyntheticEvents_RemainSortedAndCollisionFree()
+    {
+        // Arrange: a gapped event list (Count = 3, highest Id = 9) plus a caller that appends each
+        // synthetic event like Battle does. The resulting list must stay strictly ascending so
+        // World.GetEvent's binary search keeps resolving events correctly.
+        var events = new List<LegendsViewer.Backend.Legends.Events.WorldEvent>
+        {
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 0 },
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 4 },
+            new(new List<LegendsViewer.Backend.Legends.Parser.Property>(), _mockWorld.Object) { Id = 9 },
+        };
+        _mockWorld.Setup(w => w.Events).Returns(events);
+
+        // Act: create and append three synthetic events, mirroring Battle's construction loop.
+        for (int i = 0; i < 3; i++)
+        {
+            var bf = new BattleFought(_historicalFigure, _battle, _mockWorld.Object, asAttacker: true);
+            events.Add(bf);
+        }
+
+        // Assert: ids strictly ascending and unique across the whole list.
+        for (int i = 1; i < events.Count; i++)
+        {
+            Assert.IsTrue(events[i].Id > events[i - 1].Id,
+                $"Event at index {i} (Id {events[i].Id}) must be greater than previous (Id {events[i - 1].Id}).");
+        }
+        Assert.AreEqual(events.Count, events.Select(e => e.Id).Distinct().Count(), "Event Ids must be unique.");
+    }
 }

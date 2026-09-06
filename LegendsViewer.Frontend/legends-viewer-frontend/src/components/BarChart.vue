@@ -16,6 +16,7 @@ import {
     Filler,
     BarElement
 } from 'chart.js'
+import { useEventFilterStore } from '../stores/eventFilterStore';
 
 ChartJS.register(
     CategoryScale,
@@ -53,6 +54,8 @@ export default defineComponent({
         },
     },
     setup(props) {
+        const filterStore = useEventFilterStore();
+
         // Using a computed property to extend chartData with default values
         const extendedChartData = computed(() => {
             if (!props.chartData)
@@ -67,16 +70,30 @@ export default defineComponent({
                     }]
                 }
 
-            // Add borderRadius and spacing if they don't exist
+            const bgColors = (props.chartData.labels || []).map((label) => {
+                const match = label.match(/\((.*?)\)/);
+                const typeKey = match ? match[1] : label;
+                return filterStore.excludedEventTypes.includes(typeKey)
+                    ? 'rgba(120, 120, 120, 0.2)'
+                    : 'rgba(75, 192, 192, 0.6)';
+            });
+
+            const borderColors = (props.chartData.labels || []).map((label) => {
+                const match = label.match(/\((.*?)\)/);
+                const typeKey = match ? match[1] : label;
+                return filterStore.excludedEventTypes.includes(typeKey)
+                    ? 'rgba(120, 120, 120, 0.3)'
+                    : 'rgb(75, 192, 192)';
+            });
+
             return {
                 labels: props.chartData.labels,
                 datasets: props.chartData.datasets.map(dataset => ({
                     label: dataset.label,
                     data: dataset.data,
                     fill: true,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    // tension: 0.2
+                    borderColor: borderColors,
+                    backgroundColor: bgColors,
                 })),
             };
         });
@@ -86,6 +103,7 @@ export default defineComponent({
         };
     }
 })
+
 
 ChartJS.defaults.color = '#ffffff';  // Default text color
 ChartJS.defaults.scale.ticks.color = '#b0bec5';  // Axis tick colors

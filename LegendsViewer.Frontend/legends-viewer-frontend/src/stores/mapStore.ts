@@ -1,16 +1,10 @@
 import { defineStore } from 'pinia'
 import client from "../apiClient"; // Import the global client
-import { paths } from '../generated/api-schema';
 import { components } from '../generated/api-schema'; // Import from the OpenAPI schema
-
-
-type PathsWithMethod<TPaths, TMethod extends string> = {
-    [K in keyof TPaths]: TPaths[K] extends { [method in TMethod]: any } ? K : never;
-}[keyof TPaths];
 
 export type MapSize = components['schemas']['MapSize'];
 
-const apiPaths: Record<string, PathsWithMethod<paths, "get">> = {
+const apiPaths: Record<string, any> = {
     Site: "/api/WorldMap/site/{id}/{size}",
     Region: "/api/WorldMap/region/{id}/{size}",
     UndergroundRegion: "/api/WorldMap/undergroundregion/{id}/{size}",
@@ -21,6 +15,8 @@ const apiPaths: Record<string, PathsWithMethod<paths, "get">> = {
     Entity: "/api/WorldMap/entity/{id}/{size}",
     Artifact: "/api/WorldMap/artifact/{id}/{size}",
     Structure: "/api/WorldMap/structure/{id}/{size}",
+    War: "/api/WorldMap/war/{id}/{size}",
+    Battle: "/api/WorldMap/battle/{id}/{size}",
 
     World: "/api/WorldMap/world/{size}"
 };
@@ -37,6 +33,8 @@ export const useMountainPeakMapStore = createWorldMapStore('MountainPeak');
 export const useEntityMapStore = createWorldMapStore('Entity');
 export const useArtifactMapStore = createWorldMapStore('Artifact');
 export const useStructureMapStore = createWorldMapStore('Structure');
+export const useWarMapStore = createWorldMapStore('War');
+export const useBattleMapStore = createWorldMapStore('Battle');
 
 export function createWorldMapStore(resourceName: string) {
     const pathsForResource = apiPaths[resourceName];
@@ -101,6 +99,39 @@ export function createWorldMapStore(resourceName: string) {
                     this.currentWorldObjectMap = `data:image/png;base64,${data}`
                     this.isLoading = false;
                 }
+            },
+            async loadWarfareMap(activeOnly: boolean = true) {
+                try {
+                    const response = await fetch(`http://localhost:15421/api/WorldMap/warfare?activeOnly=${activeOnly}`);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (err) {
+                    console.error('Failed to load warfare map:', err);
+                }
+                return null;
+            },
+            async loadWarOverlay(id: number) {
+                try {
+                    const response = await fetch(`http://localhost:15421/api/WorldMap/war/${id}/overlay`);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (err) {
+                    console.error('Failed to load war overlay:', err);
+                }
+                return null;
+            },
+            async loadBattleMarker(id: number) {
+                try {
+                    const response = await fetch(`http://localhost:15421/api/WorldMap/battle/${id}/marker`);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (err) {
+                    console.error('Failed to load battle marker:', err);
+                }
+                return null;
             },
         },
     });

@@ -1,16 +1,16 @@
 <template>
-  <v-list-item>
-    <div style="float: left; margin-top: 5px;">{{ label }}</div>
+  <div class="d-flex align-center justify-space-between px-4 py-2" style="width: 100%;">
+    <div class="text-body-2 pr-2 text-truncate">{{ label }}</div>
     <v-btn-toggle
-      style="float: right;"
       density="compact"
       v-model="proxyValue"
       divided
+      class="flex-shrink-0"
     >
       <v-btn value="true" size="small"><v-icon>mdi-check</v-icon></v-btn>
       <v-btn value="false" size="small"><v-icon>mdi-close</v-icon></v-btn>
     </v-btn-toggle>
-  </v-list-item>
+  </div>
 </template>
 
 <script setup lang="ts">

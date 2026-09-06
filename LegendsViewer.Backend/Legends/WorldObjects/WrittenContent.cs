@@ -1,4 +1,5 @@
 using System.Text;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.Legends.Enums;
@@ -258,6 +259,68 @@ public class WrittenContent : WorldObject
     public override string GetIcon()
     {
         return Icon;
+    }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("HasStyles", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Styles != null && Styles.Count > 0))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasReferences", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(References != null && References.Count > 0))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasArtifact", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Artifact != null))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("WrittenContentType", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals(nameof(Type), StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("Form", StringComparison.InvariantCultureIgnoreCase)) &&
+                !string.IsNullOrWhiteSpace(rule.Value))
+            {
+                string typeStr = WrittenContentType.ToString();
+                string typeDesc = WrittenContentType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !typeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !typeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (typeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     typeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            if ((rule.PropertyName.Equals("PageCount", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("Pages", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int pageCount) &&
+                rule.ViolatesIntegerCriteria(PageCount, pageCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

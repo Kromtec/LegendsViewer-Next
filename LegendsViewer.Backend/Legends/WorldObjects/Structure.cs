@@ -1,4 +1,6 @@
 using System.Text;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.Events;
 using LegendsViewer.Backend.Legends.Extensions;
@@ -279,6 +281,109 @@ public class Structure : WorldObject, IHasCoordinates
     public override string GetIcon()
     {
         return Icon;
+    }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("HasInhabitants", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Inhabitants.Count > 0 || InhabitantIDs.Count > 0))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasDeity", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Deity != null || DeityId != -1))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasReligion", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Religion != null || ReligionId != -1))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasEntity", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Entity != null || EntityId != -1))
+            {
+                return false;
+            }
+
+            if (rule.PropertyName.Equals("HasCopiedArtifacts", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(CopiedArtifacts.Count > 0 || CopiedArtifactIds.Count > 0))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("StructureType", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals(nameof(Type), StringComparison.InvariantCultureIgnoreCase)) &&
+                !string.IsNullOrWhiteSpace(rule.Value))
+            {
+                string typeStr = TypeEnum.ToString();
+                string typeDesc = TypeEnum.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !typeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !typeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (typeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     typeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            if ((rule.PropertyName.Equals("StructureSubType", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals(nameof(Subtype), StringComparison.InvariantCultureIgnoreCase)) &&
+                !string.IsNullOrWhiteSpace(rule.Value))
+            {
+                string subtypeStr = StructureSubType.ToString();
+                string subtypeDesc = StructureSubType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !subtypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !subtypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (subtypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     subtypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            if ((rule.PropertyName.Equals("InhabitantCount", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("InhabitantsCount", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int inhabitantCount) &&
+                rule.ViolatesIntegerCriteria(Math.Max(Inhabitants.Count, InhabitantIDs.Count), inhabitantCount))
+            {
+                return false;
+            }
+
+            if ((rule.PropertyName.Equals("CopiedArtifactCount", StringComparison.InvariantCultureIgnoreCase) ||
+                 rule.PropertyName.Equals("CopiedArtifactsCount", StringComparison.InvariantCultureIgnoreCase)) &&
+                int.TryParse(rule.Value, out int artifactCount) &&
+                rule.ViolatesIntegerCriteria(Math.Max(CopiedArtifacts.Count, CopiedArtifactIds.Count), artifactCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

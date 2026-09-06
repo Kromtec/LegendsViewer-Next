@@ -154,7 +154,7 @@ public class XmlPlusParser : XmlParser
                         {
                             if (CurrentSection == Section.Sites && property.Name == "structures")
                             {
-                                matchingProperty.SubProperties = property.SubProperties;
+                                MergeStructures(matchingProperty, property);
                                 continue;
                             }
                             matchingProperty.Value = property.Value;
@@ -180,6 +180,80 @@ public class XmlPlusParser : XmlParser
 
                 _currentItem = null;
                 await ParseAsync();
+            }
+        }
+    }
+
+    private static void MergeStructures(Property matchingProperty, Property property)
+    {
+        if (matchingProperty.SubProperties == null)
+        {
+            matchingProperty.SubProperties = property.SubProperties;
+            return;
+        }
+        if (property.SubProperties == null)
+        {
+            return;
+        }
+
+        foreach (Property plusStruct in property.SubProperties)
+        {
+            if (plusStruct.SubProperties == null)
+            {
+                continue;
+            }
+
+            Property? plusIdProp = GetPropertyByName(plusStruct.SubProperties, "id") ?? GetPropertyByName(plusStruct.SubProperties, "local_id");
+            int plusId = -1;
+            if (plusIdProp != null)
+            {
+                int.TryParse(plusIdProp.Value, out plusId);
+            }
+
+            Property? existingStruct = matchingProperty.SubProperties.FirstOrDefault(s =>
+            {
+                if (s.SubProperties == null) return false;
+                Property? idProp = GetPropertyByName(s.SubProperties, "id") ?? GetPropertyByName(s.SubProperties, "local_id");
+                return idProp != null && int.TryParse(idProp.Value, out int id) && id == plusId;
+            });
+
+            if (existingStruct != null && existingStruct.SubProperties != null)
+            {
+                foreach (Property plusProp in plusStruct.SubProperties)
+                {
+                    if (plusProp.Name == "inhabitant" || plusProp.Name == "copied_artifact_id")
+                    {
+                        existingStruct.SubProperties.Add(plusProp);
+                    }
+                    else
+                    {
+                        Property? existingProp = GetPropertyByName(existingStruct.SubProperties, plusProp.Name);
+                        if (existingProp != null)
+                        {
+                            existingProp.Value = plusProp.Value;
+                            existingProp.Known = false;
+                            if (plusProp.SubProperties != null)
+                            {
+                                if (existingProp.SubProperties == null)
+                                {
+                                    existingProp.SubProperties = plusProp.SubProperties;
+                                }
+                                else
+                                {
+                                    existingProp.SubProperties.AddRange(plusProp.SubProperties);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            existingStruct.SubProperties.Add(plusProp);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                matchingProperty.SubProperties.Add(plusStruct);
             }
         }
     }

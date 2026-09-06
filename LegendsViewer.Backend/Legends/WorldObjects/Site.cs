@@ -122,6 +122,10 @@ public class Site : WorldObject, IHasCoordinates
     public List<Site> Connections { get; set; } = [];
     public List<string> ConnectionLinks => Connections.ConvertAll(x => x.ToLink(true, this));
 
+    [JsonIgnore]
+    public List<River> Rivers { get; set; } = [];
+    public List<string> RiverLinks => Rivers.ConvertAll(r => r.ToLink(true, this));
+
     public List<Population> Populations { get; set; } = [];
 
     public List<Official> Officials { get; set; } = [];
@@ -414,5 +418,59 @@ public class Site : WorldObject, IHasCoordinates
     {
         return Icon;
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("IsOccupied", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(CurrentOwner != null))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("HasStructures", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(HasStructures || Structures.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals(nameof(SiteType), StringComparison.InvariantCultureIgnoreCase))
+            {
+                string siteTypeStr = SiteType.ToString();
+                string siteTypeDesc = SiteType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !siteTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !siteTypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (siteTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     siteTypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            if (rule.PropertyName.Equals("StructureCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleStructCount) &&
+                rule.ViolatesIntegerCriteria(Structures.Count, ruleStructCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("BattleCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleBattleCount) &&
+                rule.ViolatesIntegerCriteria(Battles.Count, ruleBattleCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 

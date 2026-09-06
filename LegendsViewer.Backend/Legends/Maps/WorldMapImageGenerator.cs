@@ -1,4 +1,4 @@
-﻿namespace LegendsViewer.Backend.Legends.Maps;
+namespace LegendsViewer.Backend.Legends.Maps;
 
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.Extensions;
@@ -193,39 +193,158 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
 
     private static void EncircleObject(int tileSize, IHasCoordinates objectWithCoordinates, SKCanvas canvas)
     {
+        if (objectWithCoordinates == null || objectWithCoordinates.Coordinates == null || objectWithCoordinates.Coordinates.Count == 0)
+        {
+            return;
+        }
+
         // Calculate the center of the object
         var centerX = objectWithCoordinates.CenterX();
         var centerY = objectWithCoordinates.CenterY();
 
         // Convert the center to pixel coordinates
-        int strokeThickness = tileSize / 2;
-        float pixelCenterX = (float)(centerX * tileSize + strokeThickness);
-        float pixelCenterY = (float)(centerY * tileSize + strokeThickness);
+        float pixelCenterX = (float)(centerX * tileSize + tileSize / 2.0f);
+        float pixelCenterY = (float)(centerY * tileSize + tileSize / 2.0f);
 
         // Convert the width and height to pixel coordinates
         float pixelWidth = objectWithCoordinates.Width() * tileSize;
         float pixelHeight = objectWithCoordinates.Height() * tileSize;
 
-        // Define the circle size and outline
-        float pixelRadiusX = (float)pixelWidth / 2 + (tileSize * 2);
-        float pixelRadiusY = (float)pixelHeight / 2 + (tileSize * 2);
-        using (var circlePaint = new SKPaint
+        // Ensure a clear minimum radius relative to canvas dimensions (at least 3.5% of canvas width or 16px)
+        float baseRadiusX = (float)pixelWidth / 2.0f + (tileSize * 3.0f);
+        float baseRadiusY = (float)pixelHeight / 2.0f + (tileSize * 3.0f);
+        float minRadius = Math.Max(16.0f, canvas.DeviceClipBounds.Width * 0.035f);
+        float pixelRadiusX = Math.Max(baseRadiusX, minRadius);
+        float pixelRadiusY = Math.Max(baseRadiusY, minRadius);
+
+        // Define stroke thickness (minimum 3px for high visibility)
+        float strokeThickness = Math.Max(3.0f, tileSize * 0.8f);
+
+        // 1. Outer dashed radar ring for enhanced target acquisition area
+        using (var dashEffect = SKPathEffect.CreateDash(new float[] { 8.0f, 6.0f }, 0))
+        {
+            float outerRadiusX = pixelRadiusX * 1.7f;
+            float outerRadiusY = pixelRadiusY * 1.7f;
+
+            using (var paint = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = SKColors.Black,
+                StrokeWidth = strokeThickness + 3.0f,
+                PathEffect = dashEffect,
+                IsAntialias = true
+            })
+            {
+                canvas.DrawOval(pixelCenterX, pixelCenterY, outerRadiusX, outerRadiusY, paint);
+            }
+
+            using (var paint = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = SKColors.Yellow,
+                StrokeWidth = strokeThickness,
+                PathEffect = dashEffect,
+                IsAntialias = true
+            })
+            {
+                canvas.DrawOval(pixelCenterX, pixelCenterY, outerRadiusX, outerRadiusY, paint);
+            }
+        }
+
+        // 2. Black outer shadow ring for maximum contrast against any terrain background
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Black,
+            StrokeWidth = strokeThickness + 4.0f,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
+        }
+
+        // 3. Bright Yellow primary ring
+        using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
             Color = SKColors.Yellow,
-            StrokeWidth = strokeThickness
+            StrokeWidth = strokeThickness + 1.0f,
+            IsAntialias = true
         })
         {
-            canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, circlePaint);
+            canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
         }
-        using (var circlePaint = new SKPaint
+
+        // 4. Inner Red accent ring
+        using (var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
-            Color = SKColors.IndianRed,
-            StrokeWidth = strokeThickness
+            Color = SKColors.Red,
+            StrokeWidth = strokeThickness * 0.6f,
+            IsAntialias = true
         })
         {
-            canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX + strokeThickness, pixelRadiusY + strokeThickness, circlePaint);
+            canvas.DrawOval(pixelCenterX, pixelCenterY, pixelRadiusX, pixelRadiusY, paint);
+        }
+
+        // 5. Full-canvas Edge-to-Edge Target Crosshair lines (Top, Bottom, Left, Right)
+        float gap = 4.0f;
+        float canvasWidth = canvas.DeviceClipBounds.Width;
+        float canvasHeight = canvas.DeviceClipBounds.Height;
+
+        // Black outline for full-canvas crosshairs
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Black,
+            StrokeWidth = strokeThickness + 3.0f,
+            IsAntialias = true
+        })
+        {
+            // Top segment (from canvas top edge down to ring gap)
+            canvas.DrawLine(pixelCenterX, 0, pixelCenterX, Math.Max(0, pixelCenterY - pixelRadiusY - gap), paint);
+            // Bottom segment (from ring gap down to canvas bottom edge)
+            canvas.DrawLine(pixelCenterX, Math.Min(canvasHeight, pixelCenterY + pixelRadiusY + gap), pixelCenterX, canvasHeight, paint);
+            // Left segment (from canvas left edge to ring gap)
+            canvas.DrawLine(0, pixelCenterY, Math.Max(0, pixelCenterX - pixelRadiusX - gap), pixelCenterY, paint);
+            // Right segment (from ring gap to canvas right edge)
+            canvas.DrawLine(Math.Min(canvasWidth, pixelCenterX + pixelRadiusX + gap), pixelCenterY, canvasWidth, pixelCenterY, paint);
+        }
+
+        // Bright Yellow inner lines for full-canvas crosshairs
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Yellow,
+            StrokeWidth = strokeThickness,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawLine(pixelCenterX, 0, pixelCenterX, Math.Max(0, pixelCenterY - pixelRadiusY - gap), paint);
+            canvas.DrawLine(pixelCenterX, Math.Min(canvasHeight, pixelCenterY + pixelRadiusY + gap), pixelCenterX, canvasHeight, paint);
+            canvas.DrawLine(0, pixelCenterY, Math.Max(0, pixelCenterX - pixelRadiusX - gap), pixelCenterY, paint);
+            canvas.DrawLine(Math.Min(canvasWidth, pixelCenterX + pixelRadiusX + gap), pixelCenterY, canvasWidth, pixelCenterY, paint);
+        }
+
+        // 6. Target Center Dot
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            Color = SKColors.Red,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawCircle(pixelCenterX, pixelCenterY, Math.Max(2.5f, strokeThickness * 0.8f), paint);
+        }
+        using (var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Yellow,
+            StrokeWidth = 1.5f,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawCircle(pixelCenterX, pixelCenterY, Math.Max(2.5f, strokeThickness * 0.8f), paint);
         }
     }
 

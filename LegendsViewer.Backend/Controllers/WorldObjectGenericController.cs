@@ -1,4 +1,4 @@
-﻿using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Contracts;
 using LegendsViewer.Backend.DataAccess.Repositories.Interfaces;
 using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends;
@@ -92,6 +92,7 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
     }
 
     [HttpGet("{id}/events")]
+    [HttpPost("{id}/events")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -100,7 +101,8 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
         [FromQuery] int pageNumber = DefaultPageNumber,
         [FromQuery] int pageSize = DefaultPageSize,
         [FromQuery] string? sortKey = null,
-        [FromQuery] string? sortOrder = null)
+        [FromQuery] string? sortOrder = null,
+        [FromBody] EventFilterDto? filter = null)
     {
         WorldObject? item = Repository.GetById(id);
         if (item == null)
@@ -114,11 +116,13 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
             return BadRequest("Page number and page size must be greater than zero.");
         }
 
+        var filteredEvents = item.Events.Where(e => e.MatchesFilterCriteria(filter));
+
         // Get total number of elements
-        int totalElements = item.Events.Count;
+        int totalElements = filteredEvents.Count();
 
         // Calculate how many elements to skip based on the page number and size
-        var paginatedElements = item.Events
+        var paginatedElements = filteredEvents
             .SortByProperty(sortKey, sortOrder)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -130,6 +134,7 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
         {
             Items = paginatedElements,
             TotalCount = totalElements,
+            TotalFilteredCount = totalElements,
             PageSize = pageSize,
             PageNumber = pageNumber,
             TotalPages = (int)Math.Ceiling(totalElements / (double)pageSize)
@@ -186,9 +191,10 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
     }
 
     [HttpGet("{id}/eventchart")]
+    [HttpPost("{id}/eventchart")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<ChartDataDto> GetEventChart([FromRoute] int id)
+    public ActionResult<ChartDataDto> GetEventChart([FromRoute] int id, [FromBody] EventFilterDto? filter = null)
     {
         WorldObject? item = Repository.GetById(id);
         if (item == null)
@@ -202,13 +208,15 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
             Label = "Events per Year"
         };
 
+        var filteredEvents = item.Events.Where(e => e.MatchesFilterCriteria(filter));
+
         // Group by year and count events per year
-        var eventCounts = item.Events
+        var eventCounts = filteredEvents
             .GroupBy(e => e.Year)
             .ToDictionary(g => g.Key, g => g.Count());
 
         const int startYear = 0;
-        int endYear = item.World?.CurrentYear ?? eventCounts.Keys.Max();
+        int endYear = item.World?.CurrentYear ?? (eventCounts.Keys.Count > 0 ? eventCounts.Keys.Max() : 0);
 
         // Fill in missing years with 0 events
         for (int year = startYear; year <= endYear; year++)
@@ -231,9 +239,10 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
     }
 
     [HttpGet("{id}/eventtypechart")]
+    [HttpPost("{id}/eventtypechart")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<ChartDataDto> GetEventTypeChart([FromRoute] int id)
+    public ActionResult<ChartDataDto> GetEventTypeChart([FromRoute] int id, [FromBody] EventFilterDto? filter = null)
     {
         WorldObject? item = Repository.GetById(id);
         if (item == null)
@@ -247,7 +256,7 @@ public abstract class WorldObjectGenericController<T>(IWorldObjectRepository<T> 
             Label = "Occurrences per Event Type"
         };
 
-        // Group by type and count events per type
+        // Group by type and count events per type (unfiltered so type selection popup retains all types)
         var eventCounts = item.Events
             .GroupBy(e => e.Type)
             .ToDictionary(g => g.Key, g => g.Count());

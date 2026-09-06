@@ -1,4 +1,6 @@
 using System.Text;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.EventCollections;
 using LegendsViewer.Backend.Legends.Events;
@@ -48,8 +50,17 @@ public class WorldRegion : WorldObject, IRegion
     public List<string> SiteLinks => Sites.ConvertAll(s => $"{s.ToLink(true, this)} ({s.SiteType.GetDescription()})");
 
     [JsonIgnore]
+    public List<River> Rivers { get; set; } = [];
+    public List<string> RiverLinks => Rivers.ConvertAll(r => r.ToLink(true, this));
+
+    [JsonIgnore]
     public List<MountainPeak> MountainPeaks { get; set; } // legends_plus.xml
     public List<string> MountainPeakLinks => MountainPeaks.ConvertAll(m => m.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<WorldConstruction> Constructions { get; set; } = [];
+    public List<string> ConstructionLinks => Constructions.ConvertAll(c => $"{c.ToLink(true, this)} ({c.WorldConstructionType.GetDescription()})");
+
     public Evilness Evilness { get; set; } // legends_plus.xml
 
     [JsonIgnore]
@@ -198,5 +209,84 @@ public class WorldRegion : WorldObject, IRegion
             }
         }
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("HasSites", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Sites.Count > 0))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("HasForce", StringComparison.InvariantCultureIgnoreCase) &&
+                rule.ViolatesBooleanCriteria(Force != null || ForceId != -1))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals(nameof(RegionType), StringComparison.InvariantCultureIgnoreCase) ||
+                rule.PropertyName.Equals("Biome", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string regionTypeStr = RegionType.ToString();
+                string regionTypeDesc = RegionType.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !regionTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !regionTypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (regionTypeStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     regionTypeDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Type.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            if (rule.PropertyName.Equals(nameof(Evilness), StringComparison.InvariantCultureIgnoreCase))
+            {
+                string evilnessStr = Evilness.ToString();
+                string evilnessDesc = Evilness.GetDescription();
+                if (rule.Operator == FilterOperator.Equals &&
+                    !evilnessStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !evilnessDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) &&
+                    !Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+                if (rule.Operator == FilterOperator.NotEquals &&
+                    (evilnessStr.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     evilnessDesc.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase) ||
+                     Subtype.Equals(rule.Value, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            if (rule.PropertyName.Equals(nameof(SquareTiles), StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleTiles) &&
+                rule.ViolatesIntegerCriteria(SquareTiles, ruleTiles))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("SiteCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleSiteCount) &&
+                rule.ViolatesIntegerCriteria(Sites.Count, ruleSiteCount))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("BattleCount", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleBattleCount) &&
+                rule.ViolatesIntegerCriteria(Battles.Count, ruleBattleCount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 

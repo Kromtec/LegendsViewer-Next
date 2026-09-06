@@ -110,4 +110,24 @@ public class HfDoesInteractionTests
         // Assert
         Assert.AreEqual(initialEventCount + 1, _doer.Events.Count);
     }
+
+    [TestMethod]
+    public void Constructor_WithDeityMajorCurse_SetsVampireCreatureTypeAndIsVampire()
+    {
+        // Arrange: Deity major curses (e.g. DEITY_MAJOR_CURSE_10) represent vampire curses in DF legends XML
+        var properties = new List<Property>
+        {
+            new Property { Name = "doer_hfid", Value = "1" },
+            new Property { Name = "target_hfid", Value = "2" },
+            new Property { Name = "interaction", Value = "DEITY_MAJOR_CURSE_10" }
+        };
+
+        // Act
+        var hfDoesInteraction = new HfDoesInteraction(properties, _mockWorld.Object);
+
+        // Assert
+        Assert.IsTrue(_target.ActiveInteractions.Contains("DEITY_MAJOR_CURSE_10"));
+        Assert.IsTrue(LegendsViewer.Backend.Extensions.HistoricalFigureExtensions.IsVampire(_target));
+        Assert.IsTrue(_target.CreatureTypes.Any(ct => ct.Type == "vampire"));
+    }
 }
