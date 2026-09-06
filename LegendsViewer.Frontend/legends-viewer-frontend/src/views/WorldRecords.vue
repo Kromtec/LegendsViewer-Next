@@ -56,7 +56,7 @@
     <!-- Category Tabs Header -->
     <v-row align="center" class="mt-2 mb-4">
       <v-col cols="12">
-        <v-tabs v-model="activeTab" color="primary">
+        <v-tabs v-model="activeTab" color="primary" align-tabs="center">
           <v-tab
             v-for="cat in recordsStore.records?.categories"
             :key="cat.id"
@@ -103,21 +103,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useWorldRecordsStore } from '../stores/worldRecordsStore';
 import { useWorldStore } from '../stores/worldStore';
 import RecordCard from '../components/RecordCard.vue';
 
 const recordsStore = useWorldRecordsStore();
 const worldStore = useWorldStore();
+const route = useRoute();
+const router = useRouter();
 
-const activeTab = ref('warfare');
+const activeTab = ref((route.query.tab as string) || 'warfare');
+
+watch(activeTab, (newTab) => {
+  if (route.query.tab !== newTab) {
+    router.replace({ query: { ...route.query, tab: newTab } });
+  }
+});
+
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (newTab && typeof newTab === 'string' && newTab !== activeTab.value) {
+      activeTab.value = newTab;
+    }
+  }
+);
 
 onMounted(async () => {
   if (!worldStore.world) {
     await worldStore.loadWorld();
   }
   await recordsStore.loadRecords();
+
+  if (route.query.tab && typeof route.query.tab === 'string') {
+    const isValid = recordsStore.records?.categories.some(c => c.id === route.query.tab);
+    if (isValid) {
+      activeTab.value = route.query.tab as string;
+    }
+  }
 });
 </script>
 
