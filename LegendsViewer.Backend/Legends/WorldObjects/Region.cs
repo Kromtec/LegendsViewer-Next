@@ -50,8 +50,17 @@ public class WorldRegion : WorldObject, IRegion
     public List<string> SiteLinks => Sites.ConvertAll(s => $"{s.ToLink(true, this)} ({s.SiteType.GetDescription()})");
 
     [JsonIgnore]
+    public List<River> Rivers { get; set; } = [];
+    public List<string> RiverLinks => Rivers.ConvertAll(r => r.ToLink(true, this));
+
+    [JsonIgnore]
     public List<MountainPeak> MountainPeaks { get; set; } // legends_plus.xml
     public List<string> MountainPeakLinks => MountainPeaks.ConvertAll(m => m.ToLink(true, this));
+
+    [JsonIgnore]
+    public List<WorldConstruction> Constructions { get; set; } = [];
+    public List<string> ConstructionLinks => Constructions.ConvertAll(c => $"{c.ToLink(true, this)} ({c.WorldConstructionType.GetDescription()})");
+
     public Evilness Evilness { get; set; } // legends_plus.xml
 
     [JsonIgnore]

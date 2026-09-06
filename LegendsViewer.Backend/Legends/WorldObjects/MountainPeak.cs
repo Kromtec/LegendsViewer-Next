@@ -1,5 +1,9 @@
 using System.Text;
+using System.Text.Json.Serialization;
+using LegendsViewer.Backend.Contracts;
+using LegendsViewer.Backend.Extensions;
 using LegendsViewer.Backend.Legends.Events;
+using LegendsViewer.Backend.Legends.Extensions;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.Various;
@@ -9,13 +13,27 @@ namespace LegendsViewer.Backend.Legends.WorldObjects;
 
 public class MountainPeak : WorldObject, IHasCoordinates
 {
+    [JsonIgnore]
     public WorldRegion? Region { get; set; }
+    public string? RegionLink => Region?.ToLink(true, this);
+    public string? RegionName => Region?.Name;
+    public string? RegionType => Region?.RegionType.GetDescription();
+    public string? RegionEvilness => Region?.Evilness.GetDescription();
+
     public List<Location> Coordinates { get; set; } = [];
     public int Height { get; set; } // legends_plus.xml
-    public string HeightMeter { get => Height * 3 + " m"; set { } } // legends_plus.xml
+    public string HeightMeter => $"{Height * 3} m";
+    public string HeightFeet => $"{Math.Round(Height * 3 * 3.28084):N0} ft";
     public bool IsVolcano { get; set; }
 
-    public string TypeAsString => IsVolcano ? "Volcano" : "Mountain";
+    public int WorldRank { get; set; }
+    public int TotalPeaksInWorld { get; set; }
+    public bool IsHighestInWorld => WorldRank == 1 && TotalPeaksInWorld > 0;
+    public int RegionalRank { get; set; }
+    public int TotalPeaksInRegion => Region?.MountainPeaks.Count ?? 0;
+    public bool IsHighestInRegion => RegionalRank == 1 && TotalPeaksInRegion > 0;
+
+    public string TypeAsString => IsVolcano ? "Volcano" : "Mountain Peak";
 
     public MountainPeak(List<Property> properties, IWorld world)
         : base(properties, world)
@@ -49,7 +67,7 @@ public class MountainPeak : WorldObject, IHasCoordinates
                     break;
             }
         }
-        if(string.IsNullOrEmpty(Name))
+        if (string.IsNullOrEmpty(Name))
         {
             Name = IsVolcano ? "Volcano" : "Mountain Peak";
         }
@@ -80,5 +98,30 @@ public class MountainPeak : WorldObject, IHasCoordinates
     {
         return Icon;
     }
+
+    public override bool MatchesFilterCriteria(WorldObjectFilterDto filter)
+    {
+        if (!base.MatchesFilterCriteria(filter))
+        {
+            return false;
+        }
+
+        foreach (var rule in filter.Filters)
+        {
+            if (rule.PropertyName.Equals("Height", StringComparison.InvariantCultureIgnoreCase) && int.TryParse(rule.Value, out int ruleHeight) &&
+                rule.ViolatesIntegerCriteria(Height, ruleHeight))
+            {
+                return false;
+            }
+            if (rule.PropertyName.Equals("IsVolcano", StringComparison.InvariantCultureIgnoreCase) && bool.TryParse(rule.Value, out bool ruleVolcano) &&
+                IsVolcano != ruleVolcano)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+
 

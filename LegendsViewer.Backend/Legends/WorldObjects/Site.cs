@@ -122,6 +122,10 @@ public class Site : WorldObject, IHasCoordinates
     public List<Site> Connections { get; set; } = [];
     public List<string> ConnectionLinks => Connections.ConvertAll(x => x.ToLink(true, this));
 
+    [JsonIgnore]
+    public List<River> Rivers { get; set; } = [];
+    public List<string> RiverLinks => Rivers.ConvertAll(r => r.ToLink(true, this));
+
     public List<Population> Populations { get; set; } = [];
 
     public List<Official> Officials { get; set; } = [];
