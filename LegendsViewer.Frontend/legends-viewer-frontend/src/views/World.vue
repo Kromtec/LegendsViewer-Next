@@ -50,6 +50,19 @@ const eventTableHeaders: TableHeader[] = [
     { title: 'Event', key: 'html', sortable: false },
 ]
 
+const populationTableHeaders: TableHeader[] = [
+    { title: 'Race', key: 'race.namePlural' },
+    { title: 'Count', key: 'count', align: 'end' },
+]
+
+const populationGroups = computed(() => [
+    { title: 'Civilized Population', populations: store.world?.civilizedPopulations ?? [] },
+    { title: 'Number of Sites', populations: store.world?.sitePopulations ?? [] },
+    { title: 'Uncivilized Site Population', populations: store.world?.uncivilizedSitePopulations ?? [] },
+    { title: 'Outdoor Population', populations: store.world?.outdoorPopulations ?? [] },
+    { title: 'Underground Population', populations: store.world?.undergroundPopulations ?? [] },
+]);
+
 const eventCollectionTableHeaders: TableHeader[] = [
     { title: 'Start', key: 'startDate', align: 'center' },
     { title: 'End', key: 'endDate', align: 'center' },
@@ -121,6 +134,15 @@ const eventCollectionTableHeaders: TableHeader[] = [
                 <v-card-text>
                     <DoughnutChart :chart-data="store.world?.areaByOverworldRegions" />
                 </v-card-text>
+            </v-card>
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-col v-for="group in populationGroups" :key="group.title" v-show="group.populations.length" cols="12" xl="3" lg="6">
+            <v-card :title="group.title" variant="text">
+                <template #prepend><v-icon class="mr-2" icon="mdi-account-group" size="32px" /></template>
+                <v-data-table :headers="populationTableHeaders" :items="group.populations" density="compact"
+                    :items-per-page="5" />
             </v-card>
         </v-col>
     </v-row>

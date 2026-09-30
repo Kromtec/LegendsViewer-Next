@@ -27,9 +27,7 @@ public class Battle : EventCollection, IHasComplexSubtype
     public Entity? Defender { get; set; }
     [JsonIgnore]
     public Entity? Victor { get; set; }
-    [JsonIgnore]
     public List<Squad> Attackers { get; set; } = [];
-    [JsonIgnore]
     public List<Squad> Defenders { get; set; } = [];
     [JsonIgnore]
     public List<HistoricalFigure> NotableAttackers { get; set; } = [];

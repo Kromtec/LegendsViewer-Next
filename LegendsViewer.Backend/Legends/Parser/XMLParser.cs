@@ -24,8 +24,9 @@ public class XmlParser : IDisposable
     {
         World = world;
         _xmlStream = new FilteredStream(new FileStream(xmlFile, FileMode.Open, FileAccess.Read, FileShare.Read));
+        // Premium exports UTF-8 bytes but still declare the legacy CP437 encoding.
         XmlReader = XmlReader.Create(
-            _xmlStream,
+            new StreamReader(_xmlStream, System.Text.Encoding.UTF8),
             new XmlReaderSettings { Async = true, IgnoreWhitespace = true, IgnoreComments = true, IgnoreProcessingInstructions = true });
     }
 

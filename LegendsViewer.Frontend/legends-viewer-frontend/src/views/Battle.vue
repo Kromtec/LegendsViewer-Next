@@ -16,11 +16,29 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
     { title: 'Notable Deaths', items: store.object?.notableDeathLinks ?? [], icon: "mdi-grave-stone", subtitle: "Key figures who died in this battle" },
 ]);
 
+const squadHeaders = [
+    { title: 'Race', key: 'race.namePlural' },
+    { title: 'Combatants (Deaths)', key: 'numbers', align: 'end' as const },
+];
+
+const squadGroups = computed(() => [
+    { title: 'Attackers', squads: store.object?.attackers ?? [] },
+    { title: 'Defenders', squads: store.object?.defenders ?? [] },
+]);
+
 </script>
 
 <template>
     <WorldObjectPage :store="store" :mapStore="mapStore" :object-type="'battle'">
         <template v-slot:type-specific-before-table>
+            <v-col v-for="group in squadGroups" :key="group.title" v-show="group.squads.length" cols="12" xl="6">
+                <v-card :title="group.title" variant="text">
+                    <template #prepend><v-icon class="mr-2" icon="mdi-shield-sword" size="32px" /></template>
+                    <v-data-table :headers="squadHeaders" :items="group.squads" density="compact" :items-per-page="5">
+                        <template #item.numbers="{ item }">{{ item.numbers }} ({{ item.deaths }})</template>
+                    </v-data-table>
+                </v-card>
+            </v-col>
             <template v-for="(list, i) in lists" :key="i">
                 <v-col v-if="list?.items.length" cols="12" xl="4" lg="6" md="12">
                     <LegendsCardList :list="list" />

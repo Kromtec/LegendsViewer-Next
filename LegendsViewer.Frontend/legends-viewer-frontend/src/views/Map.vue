@@ -359,113 +359,41 @@ interface SiteAtCoordinate {
   y: number;
 }
 
-interface MarkerConfig {
-  shape: 'circle' | 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'star';
-  size?: number;
-  color?: string;
-}
-
-const siteTypeMarkers: Record<SiteType, MarkerConfig> = {
-  Unknown: { shape: 'circle' },
-
-  // Dwarves
-  Hillocks: { shape: 'square', size: 2 },
-  Fortress: { shape: 'pentagon' },
-  MountainHalls: { shape: 'hexagon', size: 4 },
-
-  // Elves
-  ForestRetreat: { shape: 'pentagon' },
-
-  // Human
-  Hamlet: { shape: 'square', size: 2 },
-  Town: { shape: 'pentagon' },
-  Castle: { shape: 'hexagon', size: 4 },
-
-  // Goblins
-  DarkPits: { shape: 'pentagon' },
-  DarkFortress: { shape: 'hexagon' },
-
-  // Main Civilizations
-  Monastery: { shape: 'triangle' },
-  Fort: { shape: 'triangle' },
-  Tomb: { shape: 'triangle' },
-
-  // Mysterious
-  MysteriousLair: { shape: 'square', size: 2, color: '#AAAAFF' },
-  MysteriousDungeon: { shape: 'pentagon', color: '#AAAAFF' },
-  MysteriousPalace: { shape: 'hexagon', size: 4, color: '#AAAAFF' },
-
-  // Nature (Kobolds often start there)
-  Cave: { shape: 'circle' },
-
-  // Monsters
-  Lair: { shape: 'circle', size: 2 },
-
-  // Demons
-  Vault: { shape: 'star' },
-
-  // Minotaur
-  Labyrinth: { shape: 'star' },
-
-  // Titan and Colossus
-  Shrine: { shape: 'star' },
-
-  // Necromancer
-  Tower: { shape: 'star', size: 4 },
-
-  // Others
-  Camp: { shape: 'circle' },
-  ImportantLocation: { shape: 'star' },
+const siteTypeSprites: Record<SiteType, [number, number]> = {
+  MountainHalls: [0, 9], Fortress: [1, 9], Hillocks: [2, 9], Castle: [3, 9],
+  Monastery: [4, 9], Tomb: [5, 9], Shrine: [6, 9], Fort: [8, 9],
+  ForestRetreat: [9, 9], Hamlet: [11, 9], Town: [12, 9], Camp: [14, 10],
+  Labyrinth: [0, 11], Lair: [1, 11], Cave: [2, 11], DarkPits: [4, 11],
+  DarkFortress: [5, 11], Tower: [6, 11], Vault: [7, 11],
+  MysteriousPalace: [8, 11], MysteriousDungeon: [9, 11], MysteriousLair: [10, 11],
+  Unknown: [8, 11], ImportantLocation: [8, 11],
 };
 
-function createMarker(siteType: SiteType, siteColor: string | null | undefined, latlng: L.LatLngExpression): L.Layer {
-  const config = siteTypeMarkers[siteType];
-  const color = config?.color ?? siteColor ?? "#666"
-  const size = config?.size ?? 3;
-  const options = { pane: 'overlayPane', color: color };
-  switch (config?.shape) {
-    case 'circle':
-      return L.circle(latlng, { ...options, radius: size });
-    case 'triangle':
-      return createPolygon(latlng, 3, size, color);
-    case 'square':
-      return createPolygon(latlng, 4, size, color);
-    case 'pentagon':
-      return createPolygon(latlng, 5, size, color);
-    case 'hexagon':
-      return createPolygon(latlng, 6, size, color);
-    case 'star':
-      return createStar(latlng, 5, size, size / 2, color);
-    default:
-      return L.circle(latlng, { ...options, radius: size / 2 });
-  }
+function createMarker(siteType: SiteType, latlng: L.LatLngExpression): L.Layer {
+  const [column, row] = siteTypeSprites[siteType] ?? siteTypeSprites.Unknown;
+  return L.marker(latlng, {
+    pane: 'markerPane',
+    icon: L.divIcon({
+      className: 'df-site-marker',
+      html: `<span style="background-image:url(http://localhost:15421/api/WorldMap/game-site-icons);background-position:-${column * 16}px -${row * 16}px"></span>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+    }),
+  });
 }
 
-function createPolygon(center: L.LatLngExpression, sides: number, size: number, color: string): L.Polygon {
-  const vertices: L.LatLngExpression[] = [];
-  for (let i = 0; i < sides; i++) {
-    const angle = (i / sides) * 2 * Math.PI + Math.PI / 2; // Add 90 degrees (π/2 radians)
-    const vertex: L.LatLngExpression = [
-      (center as number[])[0] + size * Math.sin(angle),
-      (center as number[])[1] + size * Math.cos(angle)
-    ]
-    vertices.push(vertex);
-  }
-  return L.polygon(vertices, { pane: 'overlayPane', color });
-}
-
-function createStar(center: L.LatLngExpression, points: number, outer: number, inner: number, color: string): L.Polygon {
-  const vertices: L.LatLngExpression[] = [];
-  for (let i = 0; i < points * 2; i++) {
-    const angle = (i / (points * 2)) * 2 * Math.PI + Math.PI / 2; // Add 90 degrees (π/2 radians)
-    const radius = i % 2 === 0 ? outer : inner;
-    const vertex: L.LatLngExpression = [
-      (center as number[])[0] + radius * Math.sin(angle),
-      (center as number[])[1] + radius * Math.cos(angle)
-    ]
-    vertices.push(vertex);
-  }
-  return L.polygon(vertices, { pane: 'overlayPane', color });
+function createOwnerBorder(color: string | null | undefined, latlng: L.LatLngExpression): L.Layer {
+  return L.marker(latlng, {
+    pane: 'shadowPane',
+    interactive: false,
+    keyboard: false,
+    icon: L.divIcon({
+      className: 'site-owner-border',
+      html: `<span style="border-color:${color ?? '#666'}"></span>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+    }),
+  });
 }
 
 function coordinateKey(x: number, y: number): string {
@@ -530,6 +458,14 @@ function createUnifiedPickerPopup(items: MapTileItem[], router: Router): HTMLEle
       itemEl.append(marker.typeAsString ?? 'Unknown');
       itemEl.append(document.createElement('br'), document.createElement('br'));
       appendRichContent(itemEl, marker.owner ?? 'Others');
+      if (marker.populations?.length) {
+        const population = document.createElement('div');
+        population.className = 'site-picker__population';
+        population.textContent = marker.populations
+          .map(pop => `${pop.race?.namePlural ?? 'Unknown'}: ${(pop.count ?? 0).toLocaleString()}`)
+          .join(' · ');
+        itemEl.appendChild(population);
+      }
     } else if (item.type === 'battle') {
       const battle = item.data as BattleMapMarkerDto;
       itemEl.appendChild(createBattlePopupElement(battle));
@@ -620,7 +556,8 @@ export default defineComponent({
     const currentOverlay = ref<ImageOverlay | null>(null);
     const siteCountLayer = ref<LayerGroup | null>(null);
     const highlightLayer = ref<LayerGroup | null>(null);
-    const siteMarkersMap = new Map<number, { marker: L.Layer; popup: HTMLElement }>();
+    const siteLayer = new L.LayerGroup();
+    const siteMarkersMap = new Map<number, L.Layer>();
 
     // This will hold the LayerGroups for different owners
     const ownerLayers: Record<string, LayerGroup> = {};
@@ -639,10 +576,9 @@ export default defineComponent({
 
     const bindTileMarkerPopup = (marker: L.Layer, x: number, y: number) => {
       if ('bindPopup' in marker && typeof (marker as any).bindPopup === 'function') {
-        (marker as any).bindPopup(() => {
-          const activeItems = getActiveItemsAtTile(x, y);
-          return createUnifiedPickerPopup(activeItems, router);
-        }, { minWidth: 220 });
+        const content = () => createUnifiedPickerPopup(getActiveItemsAtTile(x, y), router);
+        (marker as any).bindPopup(content, { minWidth: 220 });
+        (marker as any).bindTooltip(content, { sticky: true, direction: 'top', opacity: 0.95 });
       }
     };
 
@@ -665,6 +601,24 @@ export default defineComponent({
       }
     };
 
+    const syncSiteMarkerScale = (zoom: number) => {
+      const markerScale = 2 ** (zoom - 1);
+      for (const items of tileItemsMap.values()) {
+        for (const item of items) {
+          if (item.type === 'site') {
+            const sprite = (item.marker as L.Marker).getElement()?.querySelector<HTMLElement>('span');
+            if (sprite) sprite.style.transform = `scale(${markerScale})`;
+          }
+        }
+      }
+      for (const layer of Object.values(ownerLayers)) {
+        layer.eachLayer(border => {
+          const square = (border as L.Marker).getElement()?.querySelector<HTMLElement>('span');
+          if (square) square.style.transform = `scale(${markerScale})`;
+        });
+      }
+    };
+
     const syncTileBadges = () => {
       if (!leafletMap.value) return;
 
@@ -675,9 +629,11 @@ export default defineComponent({
       const countLayer = siteCountLayer.value;
       countLayer.clearLayers();
 
-      const isMaxZoom = map.getZoom() === map.getMaxZoom();
+      const zoom = map.getZoom();
+      const isMaxZoom = zoom === map.getMaxZoom();
       const scale = 8;
       const height = worldStore.world.height ?? 0;
+      syncSiteMarkerScale(zoom);
 
       if (isMaxZoom) {
         for (const items of tileItemsMap.values()) {
@@ -714,6 +670,7 @@ export default defineComponent({
     };
 
     let resizeObserver: ResizeObserver | null = null;
+    let disposed = false;
 
     const initMap = async () => {
       if (!leafletMap.value) {
@@ -721,11 +678,12 @@ export default defineComponent({
           crs: L.CRS.Simple,
           zoom: 0,
           minZoom: -2,
-          maxZoom: 2
+          maxZoom: 8,
+          zoomAnimation: false
         });
         leafletMap.value.on('zoomend', syncTileBadges);
-        leafletMap.value.on('overlayadd', syncTileBadges);
-        leafletMap.value.on('overlayremove', syncTileBadges);
+        leafletMap.value.on('overlayadd', () => requestAnimationFrame(syncTileBadges));
+        leafletMap.value.on('overlayremove', () => requestAnimationFrame(syncTileBadges));
 
         const mapContainerEl = document.getElementById('map');
         if (mapContainerEl && typeof window !== 'undefined' && 'ResizeObserver' in window) {
@@ -740,6 +698,11 @@ export default defineComponent({
         worldStore.loadWorld(),
         mapStore.loadWorldMap('Large')
       ]);
+      for (let attempt = 0; !disposed && !worldStore.world?.siteMarkers?.length && attempt < 80; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 250));
+        await worldStore.loadWorld();
+      }
+      if (disposed) return;
 
       if (mapStore.worldMapMax && worldStore.world?.width && worldStore.world?.height) {
         loadImageToMap(mapStore.worldMapMax);
@@ -796,10 +759,7 @@ export default defineComponent({
             leafletMap.value.setView(latlng, 1);
             addPulseCircle(x, y, 16);
 
-            const siteEntry = siteMarkersMap.get(id);
-            if (siteEntry) {
-              siteEntry.marker.openPopup();
-            }
+            siteMarkersMap.get(id)?.openPopup();
             return;
           }
         }
@@ -832,10 +792,7 @@ export default defineComponent({
           if (points.length === 1) {
             leafletMap.value.setView(points[0], 1);
             const firstSite = matchingSites[0];
-            const siteEntry = firstSite.id ? siteMarkersMap.get(firstSite.id) : undefined;
-            if (siteEntry) {
-              siteEntry.marker.openPopup();
-            }
+            if (firstSite.id) siteMarkersMap.get(firstSite.id)?.openPopup();
           } else if (points.length > 1) {
             const bounds = L.latLngBounds(points);
             leafletMap.value.fitBounds(bounds, { padding: [80, 80] });
@@ -1022,6 +979,8 @@ export default defineComponent({
 
       siteMarkersMap.clear();
       tileItemsMap.clear();
+      siteLayer.clearLayers();
+      siteLayer.addTo(leafletMap.value);
 
       const scale = 8;
       const bounds: L.LatLngBoundsExpression = [[0, 0], [scale * height, scale * width]];
@@ -1048,31 +1007,29 @@ export default defineComponent({
             // Create a layer group for each owner if it doesn't exist
             if (!ownerLayers[ownerText]) {
               ownerLayers[ownerText] = new L.LayerGroup();
-              layersControl[siteMarker.owner] = ownerLayers[ownerText];
             }
+            layersControl[ownerText] = ownerLayers[ownerText];
 
             for (const coordinate of siteMarker.coordinates) {
               if (coordinate.x != null && coordinate.y != null) {
-                const marker = createMarker(
-                  siteMarker.type ?? 'Unknown',
-                  siteMarker.color,
-                  toLatLng(coordinate.x, coordinate.y)
-                );
+                const latlng = toLatLng(coordinate.x, coordinate.y);
+                const marker = createMarker(siteMarker.type ?? 'Unknown', latlng);
 
                 const siteAtCoord: SiteAtCoordinate = { marker: siteMarker, x: coordinate.x, y: coordinate.y };
                 registerTileItem({
                   type: 'site',
                   x: coordinate.x,
                   y: coordinate.y,
-                  layerGroup: ownerLayers[ownerText],
+                  layerGroup: siteLayer,
                   marker: marker,
                   data: siteAtCoord,
                 });
 
-                ownerLayers[ownerText].addLayer(marker); // Add the marker to the owner's layer
+                siteLayer.addLayer(marker);
+                ownerLayers[ownerText].addLayer(createOwnerBorder(siteMarker.color, latlng));
 
                 if (siteMarker.id != null) {
-                  siteMarkersMap.set(siteMarker.id, { marker, popup: null as any });
+                  siteMarkersMap.set(siteMarker.id, marker);
                 }
               }
             }
@@ -1087,19 +1044,25 @@ export default defineComponent({
           ownerLayers[key].addTo(leafletMap.value);
         }
         if (!controlLayers.value) {
-          controlLayers.value = L.control.layers(undefined, layersControl).addTo(leafletMap.value);
+          controlLayers.value = L.control.layers(undefined, layersControl, { collapsed: false }).addTo(leafletMap.value);
         }
 
         syncTileBadges();
 
         void mapStore.loadWarfareMap(true).then((data: WarfareMapDto | null) => {
-          if (data && warfareLayer.value) {
+          if (!disposed && data && warfareLayer.value) {
             unregisterWarfareItems();
+            const valid = (point?: { x?: number; y?: number } | null) => point?.x != null && point.y != null
+              && point.x >= 0 && point.x < width && point.y >= 0 && point.y < height;
             for (const war of data.wars ?? []) {
-              renderWarOverlay(war, warfareLayer.value as any, router, toLatLng, registerTileItem);
+              if (valid(war.attackerCoordinates) && valid(war.defenderCoordinates)) {
+                renderWarOverlay(war, warfareLayer.value as any, router, toLatLng, registerTileItem);
+              }
             }
             for (const battle of data.battles ?? []) {
-              renderBattleMarker(battle, warfareLayer.value as any, router, toLatLng, registerTileItem);
+              if (valid(battle.coordinates)) {
+                renderBattleMarker(battle, warfareLayer.value as any, router, toLatLng, registerTileItem);
+              }
             }
             syncTileBadges();
           }
@@ -1119,15 +1082,6 @@ export default defineComponent({
       }
     };
 
-    watch(
-      [() => mapStore.worldMapMax, () => worldStore.world?.width, () => worldStore.world?.height],
-      ([newBase64Map, width, height]) => {
-        if (newBase64Map && width && height) {
-          loadImageToMap(newBase64Map as string);
-        }
-      }
-    );
-
     watch(() => [route.query.type, route.query.id], ([newType, newId]) => {
       if (newType && newId) {
         const typeStr = newType as string;
@@ -1139,6 +1093,7 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      disposed = false;
       initMap();
     });
 
@@ -1147,8 +1102,10 @@ export default defineComponent({
         resizeObserver.disconnect();
         resizeObserver = null;
       }
+      disposed = true;
       if (leafletMap.value) {
         leafletMap.value.remove();
+        leafletMap.value = undefined;
       }
     });
 
@@ -1202,6 +1159,22 @@ export default defineComponent({
 
 .site-picker--multiple .site-picker__item + .site-picker__item {
   border-top: 1px solid rgba(127, 127, 127, 0.35);
+}
+
+.df-site-marker span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  transform-origin: center;
+}
+
+.site-owner-border span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid;
+  box-sizing: border-box;
 }
 
 .site-count-marker {

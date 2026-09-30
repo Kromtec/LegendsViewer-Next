@@ -3,6 +3,7 @@ using LegendsViewer.Backend.Legends.Enums;
 using LegendsViewer.Backend.Legends.Interfaces;
 using LegendsViewer.Backend.Legends.Parser;
 using LegendsViewer.Backend.Legends.WorldObjects;
+using LegendsViewer.Backend.Legends.Various;
 using Moq;
 
 namespace LegendsViewer.Backend.Tests.Legends.EventCollections;
@@ -53,6 +54,29 @@ public class BattleTests
         var battle = new Battle(props, _mockWorld.Object);
 
         Assert.IsNotNull(battle.Events);
+    }
+
+    [TestMethod]
+    public void SteamSquads_AreAggregatedByRace()
+    {
+        _mockWorld.Setup(w => w.GetCreatureInfo("DWARF")).Returns(new CreatureInfo("DWARF"));
+        var battle = new Battle([
+            new Property { Name = "attacking_squad_race", Value = "DWARF" },
+            new Property { Name = "attacking_squad_entity_pop", Value = "42" },
+            new Property { Name = "attacking_squad_number", Value = "10" },
+            new Property { Name = "attacking_squad_deaths", Value = "3" },
+            new Property { Name = "attacking_squad_site", Value = "7" },
+            new Property { Name = "attacking_squad_race", Value = "DWARF" },
+            new Property { Name = "attacking_squad_entity_pop", Value = "43" },
+            new Property { Name = "attacking_squad_number", Value = "5" },
+            new Property { Name = "attacking_squad_deaths", Value = "1" },
+            new Property { Name = "attacking_squad_site", Value = "8" }
+        ], _mockWorld.Object);
+
+        Assert.AreEqual(2, battle.AttackerSquads.Count);
+        Assert.AreEqual(1, battle.Attackers.Count);
+        Assert.AreEqual(15, battle.Attackers[0].Numbers);
+        Assert.AreEqual(4, battle.Attackers[0].Deaths);
     }
 
     [TestMethod]

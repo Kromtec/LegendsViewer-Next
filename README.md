@@ -64,6 +64,7 @@
 1. Load World Data: Export a world from Dwarf Fortress and upload the XML file in the app.
    1. The export should at least contain `<savename>-<datestamp>-legends.xml`
    2. To properly generate maps and lots more information you need `<savename>-<datestamp>-legends_plus.xml` that is generated when you make the export with DFHack.
+   3. DFHack 53.16-r2 and newer also create matching `-world_sites_and_pops.txt`, `-world_history.txt`, and `-world_map.csv` companion files. Legends Viewer uses them for population and history data and to render Premium-style terrain with graphics from your installed copy of Dwarf Fortress (set `DF_INSTALL_DIR` if it cannot be found automatically). River metadata is retained but not drawn because the export lacks the regional width/detail needed to reproduce rivers faithfully.
 2. Explore Maps: Interact with the map to discover sites and their location.
 3. Parsed worlds are saved as bookmarks for quick access in future sessions.
 4. Switch Between Worlds: Go to the overview and load different worlds, each displayed with their own interactive map and data.

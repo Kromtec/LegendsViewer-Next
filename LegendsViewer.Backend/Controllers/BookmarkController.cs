@@ -124,7 +124,7 @@ public class BookmarkController(
 
             await Task.Run(async () =>
             {
-                await _worldMapImageGenerator.LoadExportedWorldMapAsync(mapFileName);
+                await _worldMapImageGenerator.LoadExportedWorldMapAsync(xmlFileName);
                 await _worldDataService.ParseAsync(xmlFileName, xmlPlusFileName, historyFileName, sitesAndPopsFileName, mapFileName);
             });
 
@@ -136,6 +136,7 @@ public class BookmarkController(
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to load world {RegionId}", regionId);
             return StatusCode(500, $"Error parsing the XML file: {ex.Message}");
         }
     }

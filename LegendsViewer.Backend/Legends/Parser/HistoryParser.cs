@@ -19,7 +19,7 @@ public class HistoryParser : IDisposable
     public HistoryParser(IWorld world, string historyFile)
     {
         _world = world;
-        _history = new StreamReader(historyFile, Encoding.GetEncoding("windows-1252"));
+        _history = new StreamReader(historyFile, Encoding.UTF8);
         _log = new StringBuilder();
     }
 

@@ -18,6 +18,14 @@ public class WorldMapController(IWorld worldDataService, IWorldMapImageGenerator
     private readonly IWorld _worldDataService = worldDataService;
     private readonly IWorldMapImageGenerator _worldMapImageGenerator = worldMapImageGenerator;
 
+    [HttpGet("game-site-icons")]
+    public IActionResult GetGameSiteIcons()
+    {
+        var path = WorldMapImageGenerator.FindDfFile(
+            "data/vanilla/vanilla_world_map/graphics/images/world_map_details.png");
+        return path == null ? NotFound() : PhysicalFile(path, "image/png");
+    }
+
     [HttpGet("coordinates/{type}/{id}")]
     public ActionResult<MapCoordinatesDto?> GetObjectCoordinates(string type, int id)
     {
