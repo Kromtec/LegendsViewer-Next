@@ -21,18 +21,32 @@ public class WorldDto(IWorld worldDataService, IWorldMapImageGenerator worldMapI
     public int CurrentDay { get; set; } = worldDataService.CurrentDay;
 
     public List<MainCivilizationDto> MainCivilizations { get; set; } = worldDataService.Entities
-        .Where(e => e.IsCiv && e.CurrentSites?.Count > 0)
+        .Where(e => IsDisplayedCivilization(e) && e.EntityPopulation?.Count > 0)
         .OrderBy(e => e.Race.NamePlural)
         .Select(civ => civ.GetCivilizationInfo(worldMapImageGenerator))
         .ToList();
 
     public List<MainCivilizationDto> MainCivilizationsLost { get; set; } = worldDataService.Entities
-        .Where(e => e.IsCiv && e.CurrentSites?.Count == 0)
+        .Where(e => IsDisplayedCivilization(e) && (e.EntityPopulation?.Count ?? 0) == 0)
         .OrderBy(e => e.Race.NamePlural)
         .Select(civ => civ.GetCivilizationInfo(worldMapImageGenerator))
         .ToList();
 
     public List<SiteMarkerDto> SiteMarkers { get; set; } = worldDataService.Sites.ConvertAll(s => new SiteMarkerDto(s));
+    public List<Population> CivilizedPopulations { get; set; } = worldDataService.CivilizedPopulations;
+    public List<Population> SitePopulations { get; set; } = worldDataService.SitePopulations
+        .GroupBy(population => population.Race)
+        .Select(group => new Population(worldDataService, group.Key, group.Count()))
+        .OrderByDescending(population => population.Count)
+        .ToList();
+    public List<Population> UncivilizedSitePopulations { get; set; } = worldDataService.SitePopulations
+        .Where(population => !population.IsMainRace)
+        .GroupBy(population => population.Race)
+        .Select(group => new Population(worldDataService, group.Key, group.Sum(population => population.Count)))
+        .OrderByDescending(population => population.Count)
+        .ToList();
+    public List<Population> OutdoorPopulations { get; set; } = worldDataService.OutdoorPopulations;
+    public List<Population> UndergroundPopulations { get; set; } = worldDataService.UndergroundPopulations;
     public List<ListItemDto> PlayerRelatedObjects
     {
         get
@@ -69,6 +83,9 @@ public class WorldDto(IWorld worldDataService, IWorldMapImageGenerator worldMapI
         }
     }
 
+    private static bool IsDisplayedCivilization(Entity entity) =>
+        entity.IsCiv && !entity.Race.NamePlural.EndsWith("men", StringComparison.OrdinalIgnoreCase);
+
     public ChartDataDto EntityPopulationsByRace
     {
         get
@@ -77,7 +94,7 @@ public class WorldDto(IWorld worldDataService, IWorldMapImageGenerator worldMapI
 
             foreach (var entityPopulation in worldDataService.EntityPopulations)
             {
-                if (entityPopulation.Entity == null || !entityPopulation.Entity.IsCiv)
+                if (entityPopulation.Entity == null || !IsDisplayedCivilization(entityPopulation.Entity))
                 {
                     continue;
                 }

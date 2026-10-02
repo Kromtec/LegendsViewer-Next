@@ -32,7 +32,7 @@ public class BookmarkController(
         return Ok(bookmarks);
     }
 
-    [HttpGet("{encodedFilePath}")]
+    [HttpGet("{*encodedFilePath}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Bookmark> Get([FromRoute] string encodedFilePath)
@@ -46,7 +46,7 @@ public class BookmarkController(
         return Ok(item);
     }
 
-    [HttpDelete("{encodedFilePath}")]
+    [HttpDelete("{*encodedFilePath}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -124,7 +124,7 @@ public class BookmarkController(
 
             await Task.Run(async () =>
             {
-                await _worldMapImageGenerator.LoadExportedWorldMapAsync(mapFileName);
+                await _worldMapImageGenerator.LoadExportedWorldMapAsync(xmlFileName);
                 await _worldDataService.ParseAsync(xmlFileName, xmlPlusFileName, historyFileName, sitesAndPopsFileName, mapFileName);
             });
 
@@ -136,6 +136,7 @@ public class BookmarkController(
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to load world {RegionId}", regionId);
             return StatusCode(500, $"Error parsing the XML file: {ex.Message}");
         }
     }

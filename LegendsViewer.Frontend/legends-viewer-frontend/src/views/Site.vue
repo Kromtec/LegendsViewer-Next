@@ -72,6 +72,20 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
                     </v-card-text>
                 </v-card>
             </v-col>
+            <v-col cols="12" xl="4" lg="6" md="12">
+                <v-card title="Population" variant="text">
+                    <template #prepend><v-icon class="mr-2" icon="mdi-account-group" size="32px" /></template>
+                    <v-data-table
+                        v-if="store.object?.populations?.length"
+                        :headers="[{ title: 'Race', key: 'race.namePlural' }, { title: 'Count', key: 'count', align: 'end' }]"
+                        :items="store.object.populations"
+                        :sort-by="[{ key: 'count', order: 'desc' }]"
+                        density="compact"
+                        :items-per-page="10"
+                    />
+                    <v-card-text v-else>No population was recorded for this site.</v-card-text>
+                </v-card>
+            </v-col>
             <v-col v-if="store.object?.deathsByRace?.labels != null && store.object?.deathsByRace?.labels?.length > 0"
                 cols="12" xl="4" lg="6" md="12">
                 <v-card title="Deaths by Race" :subtitle="'How many deaths were at this site, grouped by the race'"

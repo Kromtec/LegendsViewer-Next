@@ -121,15 +121,7 @@ export const useBookmarkStore = defineStore('bookmark', {
         return;
       }
 
-      if (error !== undefined) {
-        console.error(error);
-        let existingBookmark = this.bookmarks.find(bookmark => bookmark.filePath === filePath);
-        if (existingBookmark) {
-          existingBookmark.state = 'Default';
-        }
-        this.isLoadingNewWorld = false;
-        this.bookmarkError = error.title ?? error.type ?? 'Failed to delete bookmark';
-      } else if (data !== undefined) {
+      if (error === undefined) {
         const newBookmark = data as Bookmark | null | undefined;
 
         // Find index AFTER the await to avoid stale reference
@@ -138,15 +130,19 @@ export const useBookmarkStore = defineStore('bookmark', {
           // Update the existing bookmark
           this.bookmarks[index] = newBookmark;
         } else if (index !== -1) {
-          // Remove the bookmark if newBookmark is null or undefined
+          // Remove the bookmark if newBookmark is null or undefined (e.g. 204 No Content)
           this.bookmarks.splice(index, 1);
         }
-        // If index === -1, bookmark was already removed, nothing to do
 
         this.isLoadingNewWorld = false;
       } else {
-        // Handle case where both error and data are undefined
+        console.error(error);
+        let existingBookmark = this.bookmarks.find(bookmark => bookmark.filePath === filePath);
+        if (existingBookmark) {
+          existingBookmark.state = 'Default';
+        }
         this.isLoadingNewWorld = false;
+        this.bookmarkError = (error as any)?.title ?? (error as any)?.type ?? 'Failed to delete bookmark';
       }
     },
     async loadByFolderAndFile(folderPath: string, fileName: string) {

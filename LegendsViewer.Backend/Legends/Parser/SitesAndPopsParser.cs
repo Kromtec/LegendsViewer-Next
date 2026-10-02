@@ -20,7 +20,7 @@ public class SitesAndPopulationsParser : IDisposable
     public SitesAndPopulationsParser(IWorld world, string sitesAndPopsFile)
     {
         _world = world;
-        _sitesAndPops = new StreamReader(sitesAndPopsFile, Encoding.GetEncoding("windows-1252"));
+        _sitesAndPops = new StreamReader(sitesAndPopsFile, Encoding.UTF8);
     }
 
     public void Parse()
@@ -41,6 +41,7 @@ public class SitesAndPopulationsParser : IDisposable
             ReadOfficials();
             ReadPopulations();
         }
+        InferLairPopulations();
         ReadOutdoorPopulations();
         ReadUndergroundPopulations();
         _sitesAndPops.Close();
@@ -81,7 +82,7 @@ public class SitesAndPopulationsParser : IDisposable
                 _world.CivilizedPopulations.Add(new Population(_world, population, count));
                 ReadLine();
             }
-            _world.CivilizedPopulations.AddRange(_world.CivilizedPopulations.OrderByDescending(population => population.Count));
+            _world.CivilizedPopulations.Sort((left, right) => right.Count.CompareTo(left.Count));
             while (_currentLine != "Sites")
             {
                 ReadLine();
@@ -267,6 +268,21 @@ public class SitesAndPopulationsParser : IDisposable
         }
     }
 
+    private void InferLairPopulations()
+    {
+        foreach (var site in _world.Sites.Where(site => site.SiteType == SiteType.Lair && site.Populations.Count == 0))
+        {
+            var populations = _world.HistoricalFigures
+                .Where(hf => hf.DeathYear == -1 && hf.RelatedSites.Any(link => link.Type == SiteLinkType.Lair && link.Site == site))
+                .GroupBy(hf => hf.Race)
+                .Select(group => new Population(_world, group.Key, group.Count()))
+                .OrderByDescending(population => population.Count)
+                .ToList();
+            site.Populations.AddRange(populations);
+            _world.SitePopulations.AddRange(populations);
+        }
+    }
+
     public void ReadPopulations()
     {
         List<Population> populations = [];
@@ -280,7 +296,8 @@ public class SitesAndPopulationsParser : IDisposable
 
         if (_site != null)
         {
-            _site.Populations = populations.OrderByDescending(pop => pop.Count).ToList();
+            _site.Populations.Clear();
+            _site.Populations.AddRange(populations.OrderByDescending(pop => pop.Count));
         }
         _owner?.AddPopulations(populations);
         _world.SitePopulations.AddRange(populations);
@@ -344,8 +361,12 @@ public class SitesAndPopulationsParser : IDisposable
 
     private void ReadOutdoorPopulations()
     {
+        while (_currentLine != "Outdoor Animal Populations (Including Undead)" && !_sitesAndPops.EndOfStream)
+        {
+            ReadLine();
+        }
         ReadLine();
-        ReadLine();
+        while (string.IsNullOrEmpty(_currentLine) && !_sitesAndPops.EndOfStream) ReadLine();
         while (!string.IsNullOrEmpty(_currentLine) && !_sitesAndPops.EndOfStream)
         {
             if (string.IsNullOrEmpty(_currentLine))
@@ -361,13 +382,17 @@ public class SitesAndPopulationsParser : IDisposable
             _world.OutdoorPopulations.Add(new Population(_world, population, count));
             ReadLine();
         }
-        _world.OutdoorPopulations.AddRange(_world.OutdoorPopulations.OrderByDescending(population => population.Count));
+        _world.OutdoorPopulations.Sort((left, right) => right.Count.CompareTo(left.Count));
     }
 
     private void ReadUndergroundPopulations()
     {
+        while (_currentLine != "Underground Animal Populations (Including Undead)" && !_sitesAndPops.EndOfStream)
+        {
+            ReadLine();
+        }
         ReadLine();
-        ReadLine();
+        while (string.IsNullOrEmpty(_currentLine) && !_sitesAndPops.EndOfStream) ReadLine();
         while (!string.IsNullOrEmpty(_currentLine) && !_sitesAndPops.EndOfStream)
         {
             if (string.IsNullOrEmpty(_currentLine))
@@ -383,7 +408,7 @@ public class SitesAndPopulationsParser : IDisposable
             _world.UndergroundPopulations.Add(new Population(_world, population, count));
             ReadLine();
         }
-        _world.UndergroundPopulations.AddRange(_world.UndergroundPopulations.OrderByDescending(population => population.Count));
+        _world.UndergroundPopulations.Sort((left, right) => right.Count.CompareTo(left.Count));
     }
 
     public void Dispose()

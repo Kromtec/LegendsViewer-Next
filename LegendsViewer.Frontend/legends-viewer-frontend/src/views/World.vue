@@ -5,6 +5,7 @@ import { useEventFilterStore } from '../stores/eventFilterStore';
 import DoughnutChart from '../components/DoughnutChart.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import CivilizationsCardList from '../components/CivilizationsCardList.vue';
+import TableCard from '../components/TableCard.vue';
 import EventTypeFilterList from '../components/filter/EventTypeFilterList.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData, LoadItemsOptions, TableHeader } from '../types/legends';
@@ -49,6 +50,14 @@ const eventTableHeaders: TableHeader[] = [
     { title: 'Type', key: 'type' },
     { title: 'Event', key: 'html', sortable: false },
 ]
+
+const populationGroups = computed(() => [
+    { title: 'Civilized Population', populations: store.world?.civilizedPopulations ?? [] },
+    { title: 'Number of Sites', populations: store.world?.sitePopulations ?? [] },
+    { title: 'Uncivilized Site Population', populations: store.world?.uncivilizedSitePopulations ?? [] },
+    { title: 'Outdoor Population', populations: store.world?.outdoorPopulations ?? [] },
+    { title: 'Underground Population', populations: store.world?.undergroundPopulations ?? [] },
+]);
 
 const eventCollectionTableHeaders: TableHeader[] = [
     { title: 'Start', key: 'startDate', align: 'center' },
@@ -219,6 +228,11 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     </v-data-table-server>
                 </v-card-text>
             </v-card>
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-col v-for="group in populationGroups" :key="group.title" v-show="group.populations.length" cols="12" xl="4" lg="6" md="12">
+            <TableCard :title="group.title" :items="group.populations" />
         </v-col>
     </v-row>
     <v-row>

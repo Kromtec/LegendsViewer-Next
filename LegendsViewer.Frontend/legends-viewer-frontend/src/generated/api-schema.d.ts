@@ -14557,6 +14557,8 @@ export interface components {
             readonly defendersRemainingCount?: number;
             /** Format: int32 */
             readonly deathCount?: number;
+            attackers?: components["schemas"]["Squad"][] | null;
+            defenders?: components["schemas"]["Squad"][] | null;
             readonly miscList?: components["schemas"]["ListItemDto"][] | null;
             readonly notableDeathLinks?: string[] | null;
             deathsByRace?: components["schemas"]["ChartDataDto"];
@@ -14575,6 +14577,17 @@ export interface components {
         };
         /** @enum {string} */
         BattleOutcome: "Unknown" | "AttackerWon" | "DefenderWon";
+        Squad: {
+            race?: components["schemas"]["CreatureInfo"];
+            /** Format: int32 */
+            numbers?: number;
+            /** Format: int32 */
+            deaths?: number;
+            /** Format: int32 */
+            site?: number;
+            /** Format: int32 */
+            population?: number;
+        };
         BeastAttack: {
             /** Format: int32 */
             id?: number;
@@ -15638,10 +15651,15 @@ export interface components {
             name?: string | null;
             owner?: string | null;
             ownerText?: string | null;
+            /** Format: int32 */
+            ownerId?: number | null;
+            /** Format: int32 */
+            currentOwnerId?: number | null;
             color?: string | null;
             typeAsString?: string | null;
             type?: components["schemas"]["SiteType"];
             coordinates?: components["schemas"]["Location"][] | null;
+            populations?: components["schemas"]["Population"][] | null;
         };
         SiteProperty: {
             /** Format: int32 */
@@ -15860,6 +15878,11 @@ export interface components {
             mainCivilizations?: components["schemas"]["MainCivilizationDto"][] | null;
             mainCivilizationsLost?: components["schemas"]["MainCivilizationDto"][] | null;
             siteMarkers?: components["schemas"]["SiteMarkerDto"][] | null;
+            civilizedPopulations?: components["schemas"]["Population"][] | null;
+            sitePopulations?: components["schemas"]["Population"][] | null;
+            uncivilizedSitePopulations?: components["schemas"]["Population"][] | null;
+            outdoorPopulations?: components["schemas"]["Population"][] | null;
+            undergroundPopulations?: components["schemas"]["Population"][] | null;
             readonly playerRelatedObjects?: components["schemas"]["ListItemDto"][] | null;
             entityPopulationsByRace?: components["schemas"]["ChartDataDto"];
             areaByOverworldRegions?: components["schemas"]["ChartDataDto"];

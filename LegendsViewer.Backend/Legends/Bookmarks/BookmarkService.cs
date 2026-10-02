@@ -156,25 +156,25 @@ public class BookmarkService : IBookmarkService
         
         string? id = null;
         string timestamp = ExtractTimestampFromFilePath(filePath);
-        
-        if (string.IsNullOrWhiteSpace(timestamp))
-        {
-            return new DeleteResult { Success = false };
-        }
 
-        // Try to find bookmark via filePath mapping first
-        if (_filePathToId.TryGetValue(normalizedPath, out var mappedId))
+        if (!string.IsNullOrWhiteSpace(timestamp))
+        {
+            string templatePath = ReplaceLastOccurrence(filePath, timestamp, TimestampPlaceholder);
+            string normalizedTemplatePath = Path.GetFullPath(templatePath);
+            if (_filePathToId.TryGetValue(normalizedTemplatePath, out var mappedIdFromTemplate))
+            {
+                id = mappedIdFromTemplate;
+            }
+        }
+        
+        // Try to find bookmark via direct filePath mapping second
+        if (id == null && _filePathToId.TryGetValue(normalizedPath, out var mappedId))
         {
             id = mappedId;
         }
-        else if (!fileMissing)
-        {
-            // File exists but not in mapping - shouldn't happen normally
-            return new DeleteResult { Success = false };
-        }
         
-        // If file is missing, find bookmark by searching for the timestamp
-        if (fileMissing || id == null)
+        // If still not found, find bookmark by searching for the timestamp in all bookmarks
+        if (id == null)
         {
             var bookmark = _bookmarks.Values.FirstOrDefault(b => b.WorldTimestamps.Contains(timestamp));
             if (bookmark != null)
