@@ -128,6 +128,32 @@ public class Site : WorldObject, IHasCoordinates
 
     public List<Population> Populations { get; set; } = [];
 
+    public ChartDataDto PopulationsByRace
+    {
+        get
+        {
+            ChartDataDto populationsByRace = new();
+            ChartDatasetDto populationsByRaceDataset = new();
+            foreach (var population in Populations.OrderByDescending(p => p.Count))
+            {
+                populationsByRace.Labels.Add(population.Race.NamePlural);
+                populationsByRaceDataset.Data.Add(population.Count);
+                if (World != null && World.MainRaces.TryGetValue(population.Race, out var raceColor))
+                {
+                    populationsByRaceDataset.BorderColor.Add(raceColor.ToRgbaString());
+                    populationsByRaceDataset.BackgroundColor.Add(raceColor.ToRgbaString(0.2f));
+                }
+                else
+                {
+                    populationsByRaceDataset.BorderColor.Add(Color.SlateGray.ToRgbaString());
+                    populationsByRaceDataset.BackgroundColor.Add(Color.SlateGray.ToRgbaString(0.2f));
+                }
+            }
+            populationsByRace.Datasets.Add(populationsByRaceDataset);
+            return populationsByRace;
+        }
+    }
+
     public List<Official> Officials { get; set; } = [];
     public ChartDataDto DeathsByRace
     {

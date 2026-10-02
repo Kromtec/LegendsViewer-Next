@@ -15615,6 +15615,7 @@ export interface components {
             readonly currentOwnerToLink?: string | null;
             readonly connectionLinks?: string[] | null;
             populations?: components["schemas"]["Population"][] | null;
+            populationsByRace?: components["schemas"]["ChartDataDto"];
             officials?: components["schemas"]["Official"][] | null;
             deathsByRace?: components["schemas"]["ChartDataDto"];
             readonly notableDeathLinks?: string[] | null;
