@@ -357,18 +357,84 @@ public class WorldMapImageGenerator(IWorld worldDataService) : IWorldMapImageGen
         }
     }
 
-    internal static string? FindDfFile(string relativePath)
+    public static string? FindDfFile(string relativePath)
     {
-        string?[] roots =
-        [
-            Environment.GetEnvironmentVariable("DF_INSTALL_DIR"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".local/share/Steam/steamapps/common/Dwarf Fortress"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                "Steam/steamapps/common/Dwarf Fortress")
-        ];
-        return roots.Where(r => !string.IsNullOrWhiteSpace(r))
-            .Select(r => Path.Combine(r!, relativePath)).FirstOrDefault(File.Exists);
+        return GetPotentialDfInstallDirectories()
+            .Select(root => Path.Combine(root, relativePath))
+            .FirstOrDefault(File.Exists);
+    }
+
+    private static IEnumerable<string> GetPotentialDfInstallDirectories()
+    {
+        var roots = new List<string>();
+
+        string? envDir = Environment.GetEnvironmentVariable("DF_INSTALL_DIR");
+        if (!string.IsNullOrWhiteSpace(envDir))
+        {
+            roots.Add(envDir);
+        }
+
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+        var vdfPaths = new List<string>
+        {
+            Path.Combine(userProfile, ".local/share/Steam/steamapps/libraryfolders.vdf"),
+            Path.Combine(userProfile, ".steam/steam/steamapps/libraryfolders.vdf"),
+            Path.Combine(userProfile, ".steam/root/steamapps/libraryfolders.vdf"),
+            Path.Combine(userProfile, ".var/app/com.valvesoftware.Steam/data/Steam/steamapps/libraryfolders.vdf"),
+            Path.Combine(userProfile, ".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/libraryfolders.vdf"),
+            Path.Combine(userProfile, "Library/Application Support/Steam/steamapps/libraryfolders.vdf")
+        };
+
+        if (!string.IsNullOrWhiteSpace(programFilesX86))
+        {
+            vdfPaths.Add(Path.Combine(programFilesX86, "Steam", "steamapps", "libraryfolders.vdf"));
+        }
+        if (!string.IsNullOrWhiteSpace(programFiles))
+        {
+            vdfPaths.Add(Path.Combine(programFiles, "Steam", "steamapps", "libraryfolders.vdf"));
+        }
+
+        foreach (var vdfPath in vdfPaths)
+        {
+            if (!File.Exists(vdfPath)) continue;
+            try
+            {
+                foreach (var line in File.ReadLines(vdfPath))
+                {
+                    var match = Regex.Match(line, @"^\s*""path""\s*""([^""]+)""");
+                    if (match.Success)
+                    {
+                        string libPath = match.Groups[1].Value.Replace(@"\\", @"/");
+                        roots.Add(Path.Combine(libPath, "steamapps", "common", "Dwarf Fortress"));
+                        roots.Add(Path.Combine(libPath, "common", "Dwarf Fortress"));
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore read errors
+            }
+        }
+
+        roots.Add(Path.Combine(userProfile, ".local/share/Steam/steamapps/common/Dwarf Fortress"));
+        roots.Add(Path.Combine(userProfile, ".steam/steam/steamapps/common/Dwarf Fortress"));
+        roots.Add(Path.Combine(userProfile, ".steam/root/steamapps/common/Dwarf Fortress"));
+        roots.Add(Path.Combine(userProfile, ".var/app/com.valvesoftware.Steam/data/Steam/steamapps/common/Dwarf Fortress"));
+        roots.Add(Path.Combine(userProfile, ".local/share/Bay 12 Games/Dwarf Fortress"));
+
+        if (!string.IsNullOrWhiteSpace(programFilesX86))
+        {
+            roots.Add(Path.Combine(programFilesX86, "Steam", "steamapps", "common", "Dwarf Fortress"));
+        }
+        if (!string.IsNullOrWhiteSpace(programFiles))
+        {
+            roots.Add(Path.Combine(programFiles, "Steam", "steamapps", "common", "Dwarf Fortress"));
+        }
+
+        return roots.Where(r => !string.IsNullOrWhiteSpace(r)).Distinct();
     }
 
     private static SKBitmap LoadPremiumMap(string companion, string graphicsPath, string[] spritePaths)

@@ -32,7 +32,7 @@ public class BookmarkController(
         return Ok(bookmarks);
     }
 
-    [HttpGet("{encodedFilePath}")]
+    [HttpGet("{*encodedFilePath}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Bookmark> Get([FromRoute] string encodedFilePath)
@@ -46,7 +46,7 @@ public class BookmarkController(
         return Ok(item);
     }
 
-    [HttpDelete("{encodedFilePath}")]
+    [HttpDelete("{*encodedFilePath}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

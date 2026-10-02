@@ -42,4 +42,12 @@ public class PremiumWorldMapTests
         Assert.AreEqual(10, directions);
         CollectionAssert.AreEquivalent(new[] { (0, 1), (1, 0) }, visited);
     }
+
+    [TestMethod]
+    public void FindsExistingDfFilesWhenAvailable()
+    {
+        var foundFile = WorldMapImageGenerator.FindDfFile("data/vanilla/vanilla_world_map/graphics/graphics_world_map.txt");
+        Assert.IsNotNull(foundFile, "DF graphics file should be found");
+        Assert.IsTrue(File.Exists(foundFile));
+    }
 }

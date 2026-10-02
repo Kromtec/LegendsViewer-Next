@@ -1118,7 +1118,8 @@ export default defineComponent({
 
 <style>
 .map-container {
-  height: 880px;
+  height: calc(100vh - var(--v-layout-top, 64px) - 32px);
+  min-height: 500px;
   width: 100%;
   position: relative;
   /* Ensure the map and controls are positioned properly */
@@ -1140,8 +1141,17 @@ export default defineComponent({
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out,
 .leaflet-control-attribution,
-.leaflet-popup {
+.leaflet-popup,
+.leaflet-tooltip {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.leaflet-tooltip-pane {
+  z-index: 1000 !important;
+}
+
+.leaflet-tooltip {
+  z-index: 1000 !important;
 }
 
 .leaflet-control-layers-overlays label {

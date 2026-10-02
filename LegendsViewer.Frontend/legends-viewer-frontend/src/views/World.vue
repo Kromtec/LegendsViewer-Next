@@ -5,6 +5,7 @@ import { useEventFilterStore } from '../stores/eventFilterStore';
 import DoughnutChart from '../components/DoughnutChart.vue';
 import LegendsCardList from '../components/LegendsCardList.vue';
 import CivilizationsCardList from '../components/CivilizationsCardList.vue';
+import TableCard from '../components/TableCard.vue';
 import EventTypeFilterList from '../components/filter/EventTypeFilterList.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData, LoadItemsOptions, TableHeader } from '../types/legends';
@@ -48,11 +49,6 @@ const eventTableHeaders: TableHeader[] = [
     { title: 'Date', key: 'date' },
     { title: 'Type', key: 'type' },
     { title: 'Event', key: 'html', sortable: false },
-]
-
-const populationTableHeaders: TableHeader[] = [
-    { title: 'Race', key: 'race.namePlural' },
-    { title: 'Count', key: 'count', align: 'end' },
 ]
 
 const populationGroups = computed(() => [
@@ -134,15 +130,6 @@ const eventCollectionTableHeaders: TableHeader[] = [
                 <v-card-text>
                     <DoughnutChart :chart-data="store.world?.areaByOverworldRegions" />
                 </v-card-text>
-            </v-card>
-        </v-col>
-    </v-row>
-    <v-row>
-        <v-col v-for="group in populationGroups" :key="group.title" v-show="group.populations.length" cols="12" xl="3" lg="6">
-            <v-card :title="group.title" variant="text">
-                <template #prepend><v-icon class="mr-2" icon="mdi-account-group" size="32px" /></template>
-                <v-data-table :headers="populationTableHeaders" :items="group.populations" density="compact"
-                    :items-per-page="5" />
             </v-card>
         </v-col>
     </v-row>
@@ -241,6 +228,11 @@ const eventCollectionTableHeaders: TableHeader[] = [
                     </v-data-table-server>
                 </v-card-text>
             </v-card>
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-col v-for="group in populationGroups" :key="group.title" v-show="group.populations.length" cols="12" xl="4" lg="6" md="12">
+            <TableCard :title="group.title" :items="group.populations" />
         </v-col>
     </v-row>
     <v-row>
