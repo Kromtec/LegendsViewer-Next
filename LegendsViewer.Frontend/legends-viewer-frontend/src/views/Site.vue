@@ -29,6 +29,19 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
 <template>
     <WorldObjectPage :store="store" :mapStore="mapStore" :object-type="'site'">
         <template v-slot:type-specific-before-table>
+            <v-col v-if="store.object?.populationsByRace?.labels != null && store.object?.populationsByRace?.labels?.length > 0"
+                cols="12" xl="4" lg="6" md="12">
+                <v-card title="Population by Race" subtitle="A demographic breakdown of the population at this site"
+                    height="400" variant="text">
+                    <template v-slot:prepend>
+                        <v-icon class="mr-2" icon="mdi-chart-donut" size="32px"></v-icon>
+                    </template>
+                    <v-card-text>
+                        <DoughnutChart :chart-data="store.object?.populationsByRace" />
+                    </v-card-text>
+                </v-card>
+            </v-col>
+
             <v-col cols="12" xl="4" lg="6" md="12">
                 <!-- Additional Infos -->
                 <v-card max-height="400" variant="text">
@@ -69,18 +82,6 @@ const lists: ComputedRef<LegendLinkListData[]> = computed(() => [
                                 </v-list-item-subtitle>
                             </v-list-item>
                         </v-list>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-            <v-col v-if="store.object?.populationsByRace?.labels != null && store.object?.populationsByRace?.labels?.length > 0"
-                cols="12" xl="4" lg="6" md="12">
-                <v-card title="Population by Race" subtitle="A demographic breakdown of the population at this site"
-                    height="400" variant="text">
-                    <template v-slot:prepend>
-                        <v-icon class="mr-2" icon="mdi-chart-donut" size="32px"></v-icon>
-                    </template>
-                    <v-card-text>
-                        <DoughnutChart :chart-data="store.object?.populationsByRace" />
                     </v-card-text>
                 </v-card>
             </v-col>

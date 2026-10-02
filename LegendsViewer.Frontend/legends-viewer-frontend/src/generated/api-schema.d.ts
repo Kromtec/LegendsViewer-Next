@@ -14823,6 +14823,7 @@ export interface components {
             readonly worshippedLinks?: components["schemas"]["ListItemDto"][] | null;
             entityPopulation?: components["schemas"]["EntityPopulation"];
             populations?: components["schemas"]["Population"][] | null;
+            populationsByRace?: components["schemas"]["ChartDataDto"];
             readonly originStructureLink?: string | null;
             readonly groupLinks?: string[] | null;
             readonly currentSiteList?: components["schemas"]["ListItemDto"][] | null;

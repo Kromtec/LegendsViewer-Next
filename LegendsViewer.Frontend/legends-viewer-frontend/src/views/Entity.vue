@@ -6,6 +6,7 @@ import LegendsCardList from '../components/LegendsCardList.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import WarfareGraph from '../components/WarfareGraph.vue';
 import MonarchTimeline from '../components/MonarchTimeline.vue';
+import DoughnutChart from '../components/DoughnutChart.vue';
 import { computed, ComputedRef } from 'vue';
 import { LegendLinkListData } from '../types/legends';
 
@@ -36,6 +37,19 @@ const afterLists: ComputedRef<LegendLinkListData[]> = computed(() => [
 <template>
     <WorldObjectPage :store="store" :mapStore="mapStore" :object-type="'entity'">
         <template v-slot:type-specific-before-table>
+            <v-col v-if="store.object?.populationsByRace?.labels != null && store.object?.populationsByRace?.labels?.length > 0"
+                cols="12" xl="4" lg="6" md="12">
+                <v-card title="Population by Race" subtitle="A demographic breakdown of the population in this entity"
+                    height="400" variant="text">
+                    <template v-slot:prepend>
+                        <v-icon class="mr-2" icon="mdi-chart-donut" size="32px"></v-icon>
+                    </template>
+                    <v-card-text>
+                        <DoughnutChart :chart-data="store.object?.populationsByRace" />
+                    </v-card-text>
+                </v-card>
+            </v-col>
+
             <v-col v-if="store.object?.warGraphData != null" cols="12" xl="4" lg="6" md="12">
                 <ExpandableCard title="War Graph" subtitle="Scaled representation of faction roles in war"
                     icon="mdi-sword-cross">
